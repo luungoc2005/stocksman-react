@@ -60,3 +60,8 @@ typings/
 # webpack
 assets/bundles/
 bundles/
+
+# django
+js/
+bundles/
+admin/
