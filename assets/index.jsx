@@ -6,6 +6,6 @@ var React = require('react');
 var App = require('./app');
 
 ReactDOM.render(
-  React.createElement(App, null),
-  document.getElementById('content')
+  React.createElement(App.Game, null),
+  document.getElementById('container')
 );
