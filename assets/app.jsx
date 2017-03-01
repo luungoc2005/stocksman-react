@@ -21,6 +21,16 @@ function Board(props) {
   } else {
     status = 'Next player: ' + (props.xIsNext ? 'X' : 'O');
   }
+  
+  let rowsView = [];
+  let currentRow = [];
+  for (var i = 0; i < 9; i++) {
+    if ((i + 1) % 3 == 0) {
+      currentRow.push(renderSquare(i));
+    }
+    
+  }
+
   return (
     <div>
       <div className={styles.status}>{status}</div>
