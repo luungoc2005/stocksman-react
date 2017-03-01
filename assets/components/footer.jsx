@@ -1,7 +1,7 @@
 import React from 'react';
 
-import toast from './css/toast.css'; // Grids
-import styles from './css/style.css';
+import toast from '../css/toast.css'; // Grids
+import styles from '../css/style.css';
 
 import Paper from 'material-ui/Paper';
 

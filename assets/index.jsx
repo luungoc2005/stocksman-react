@@ -13,9 +13,9 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
 // React components
-import Navbar from './navbar';
-import Footer from './footer';
-import App from './app';
+import Navbar from './components/navbar';
+import Footer from './components/footer';
+import App from './components/app';
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941

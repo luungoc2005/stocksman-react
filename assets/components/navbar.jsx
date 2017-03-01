@@ -1,6 +1,6 @@
 import React from 'react';
 
-import toast from './css/toast.css'; // Grids
+import toast from '../css/toast.css'; // Grids
 
 import AppBar from 'material-ui/AppBar';
 
