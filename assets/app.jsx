@@ -1,14 +1,17 @@
-var React = require('react');
-var styles = require('./css/style.css');
+import React from 'react';
 
-var App = React.createClass({
-  render: function() {
+import toast from './css/toast.css'; // Grids
+
+import styles from './css/style.css';
+
+class App extends React.Component {
+  render() {
     return (
-      <div className={styles.app}>
+      <div className={toast.grid}>
         <h1>Hello, World!</h1>
       </div>
     );
   }
-});
+}
 
-module.exports = App;
+export default App;

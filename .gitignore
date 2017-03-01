@@ -65,3 +65,5 @@ bundles/
 js/
 bundles/
 admin/
+webpack-stats.json
+db.sqlite3
