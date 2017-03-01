@@ -11,7 +11,8 @@ class Navbar extends React.Component {
             className={toast.grid}
             title="Material Theme Boilerplate"
             iconClassNameRight="muidocs-icon-navigation-expand-more"
-        />
+        >
+        </AppBar>
     );
   }
 }
