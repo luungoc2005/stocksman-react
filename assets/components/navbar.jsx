@@ -3,8 +3,7 @@ import React from 'react';
 import toast from '../css/toast.css'; // Grids
 
 import AppBar from 'material-ui/AppBar';
-import IconButton from 'material-ui/IconButton';
-import ActionHelp from 'material-ui/svg-icons/action/help';
+import AboutDialog from './dialogs/aboutDialog';
 
 class Navbar extends React.Component {
   render() {
@@ -14,9 +13,7 @@ class Navbar extends React.Component {
             title="Material Theme Boilerplate"
             iconElementRight=
             {
-              <IconButton>
-                <ActionHelp />
-              </IconButton>
+              <AboutDialog />
             }
         >
         </AppBar>
