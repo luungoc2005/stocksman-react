@@ -1,6 +1,8 @@
 from models import Stock, DailyPrice
 from datetime import datetime
 from pytz import timezone
+from os import listdir
+from os.path import join
 import codecs
 import json
 
@@ -8,6 +10,11 @@ def readfile(filename):
     "Read file and return as string"
     with codecs.open(filename, 'r', 'utf-8-sig') as target:
         return target.read()
+
+def readfile_lines(filename):
+    "Read file and return as list of lines"
+    with codecs.open(filename, 'r', 'utf-8-sig') as target:
+        return target.readlines()
 
 def normalize_string(input):
     return input.strip().upper()
@@ -63,6 +70,17 @@ def price_from_json(json_data):
     # save to Db
     new_price.save()
 
-def price_from_file(filename):
-    price_from_json(readfile(filename))
-
+def import_from_directory(dirname):
+    "Batch import from directory"
+    file_list = listdir(dirname)
+    for file_name in file_list:
+        full_path = join(dirname, file_name)
+        lines_list = list(readfile_lines(full_path))
+        print "Importing " + str(len(lines_list)) + " from " + file_name
+        for line_string in lines_list:
+            line_string = line_string.strip()
+            if line_string != "":                
+                try:
+                    price_from_json(line_string)
+                except:
+                    print "Error at " + line_string + " in " + full_path
