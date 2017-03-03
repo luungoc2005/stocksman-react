@@ -68,3 +68,4 @@ admin/
 webpack-stats.json
 db.sqlite3
 *.pyc
+*.sqlite3

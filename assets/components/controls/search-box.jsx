@@ -56,6 +56,7 @@ export default class SearchBox extends React.Component {
                 filter={AutoComplete.noFilter}
                 dataSource={suggest_list}
                 onUpdateInput={(text) => this.getSearchData(text)}
+                onNewRequest={this.props.onUpdateInput}
             />
         )
     }

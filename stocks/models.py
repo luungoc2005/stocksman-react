@@ -47,3 +47,8 @@ class DailyPrice(models.Model):
     fw_pe = models.DecimalField(max_digits=20, decimal_places=10)
     "Raw data"
     raw_json = models.CharField(max_length=1024)
+
+class ErrorLog(models.Model):
+    date = models.DateTimeField('Date')
+    dest_url = models.CharField(max_length=500)
+    raw_json = models.CharField(max_length=1024)

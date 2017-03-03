@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from models import StockIndex, Stock, DailyPrice
 from utils import normalize_string
+from time import mktime
 import json
 
 def JsonResponse(data):
@@ -29,6 +30,19 @@ def get_stock(request, stock_code):
         response_data["stock_code"] = result.stock_code
         response_data["url"] = result.url
         response_data["index"] = result.listed_index.index_code
+
+        # daily prices
+        prices = list(result.dailyprice_set.order_by('-close_date').only('close_date','close_price','oscillate')[:5])
+        response_prices = []
+
+        for price in prices:
+            entry = {}
+            entry["close_date"] = int(mktime(price.close_date.timetuple())*1000)
+            entry["close_price"] = price.close_price
+            entry["oscillate"] = price.oscillate
+            response_prices.append(entry)
+
+        response_data["prices"] = response_prices
 
         return JsonResponse(response_data)
     except Stock.DoesNotExist:

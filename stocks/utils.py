@@ -69,6 +69,7 @@ def price_from_json(json_data):
     stock_model.url = parsed_data["URL"]
     # save to Db
     new_price.save()
+    stock_model.save()
 
 def import_from_directory(dirname):
     "Batch import from directory"
