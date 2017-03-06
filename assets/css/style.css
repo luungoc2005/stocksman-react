@@ -18,14 +18,12 @@ html {
 
 .footer {
   max-width: 960px;
-  padding: 1.4444rem;
+  padding: 0.5rem 1.4444rem 0.5rem 1.444rem;
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
   margin: 0 auto;
-  background-color: #efefef;
-  text-align: center;
 }
 
 .main-content {

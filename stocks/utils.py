@@ -1,10 +1,23 @@
 from models import Stock, DailyPrice
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from pytz import timezone
 from os import listdir
 from os.path import join
+from urllib import urlopen
 import codecs
 import json
+
+def get_latest_weekday():
+    today_date = date.today()
+    weekday = today_date.weekday()
+    if weekday >= 5:
+        today_date = today_date - timedelta(days=(6-weekday))
+    return today_date
+
+def geturl(url):
+    "Get text content from url"
+    content = urlopen(url)
+    return content.read()
 
 def readfile(filename):
     "Read file and return as string"

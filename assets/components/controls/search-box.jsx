@@ -16,7 +16,7 @@ export default class SearchBox extends React.Component {
     }
 
     getSearchData(value) {
-        if (0 < value.length && value.length < 3) {
+        if (0 < value.length && value.length <= 3) {
             $.getJSON(SEARCH_URL.replace("{1}", value), (data) => {
                 this.setState({
                     query: value,

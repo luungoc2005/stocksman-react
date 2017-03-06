@@ -15,9 +15,9 @@ class Stock(models.Model):
 
 class DailyPrice(models.Model):
     "Daily price containing all information"
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, db_index=True)
     "Price fields"
-    close_date = models.DateTimeField('Close Date')
+    close_date = models.DateTimeField('Close Date', db_index=True)
     open_price = models.IntegerField(default=0)
     close_price = models.IntegerField(default=0)
     avg_price = models.IntegerField(default=0)
@@ -47,6 +47,13 @@ class DailyPrice(models.Model):
     fw_pe = models.DecimalField(max_digits=20, decimal_places=10)
     "Raw data"
     raw_json = models.CharField(max_length=1024)
+
+    def oscillate_percent(self):
+        "Returns oscillate as percentage"
+        if self.close_price == 0:
+            return 0
+        else:
+            return self.oscillate / self.close_price
 
 class ErrorLog(models.Model):
     date = models.DateTimeField('Date')

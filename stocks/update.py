@@ -1,24 +1,11 @@
-from datetime import date, timedelta, datetime
-from urllib import urlopen
 from time import sleep
+from datetime import datetime
 from pytz import utc
 
-from stocks.utils import normalize_string, price_from_json
+from stocks.utils import normalize_string, price_from_json, geturl, get_latest_weekday
 from stocks.models import DailyPrice, Stock, ErrorLog
 
 STOCKS_LINK = "http://finance.vietstock.vn/AjaxData/TradingResult/GetStockData.ashx?scode={1}"
-
-def get_latest_weekday():
-    today_date = date.today()
-    weekday = today_date.weekday()
-    if weekday >= 5:
-        today_date = today_date - timedelta(days=(6-weekday))
-    return today_date
-
-def geturl(url):
-    "Get text content from url"
-    content = urlopen(url)
-    return content.read()
 
 def try_add(url, max_tries=3):
     for attempt in range(1, max_tries):

@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.db.models import Max
 from models import StockIndex, Stock, DailyPrice
 from utils import normalize_string
 from time import mktime
@@ -48,9 +49,9 @@ def get_stock(request, stock_code):
     except Stock.DoesNotExist:
         return JsonError("Stock does not exist")
 
-def find_stock(request, code, limit="10"):
+def find_stock(request, code, limit="5"):
     try:
-        limit = min(int(limit), 10)
+        limit = min(int(limit), 5)
         results = Stock.objects.filter(stock_code__startswith=normalize_string(code))[:limit]
         response_data = []
 
@@ -63,4 +64,25 @@ def find_stock(request, code, limit="10"):
 
         return JsonResponse(response_data)
     except Stock.DoesNotExist:
+        return JsonError("Stock does not exist")
+
+def top_stocks(request, timestamp=0, limit="10"):
+    try:
+        if timestamp == 0:
+            #try to get latest time
+            max_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
+        else:
+            max_date = timestamp
+        results = DailyPrice.objects.filter(close_date__date=max_date.date()).order_by('-oscillate_percent')[:10]
+        response_data = []
+
+        for result in results:
+            response_item = {}
+            response_item["stock_code"] = result.stock_code
+            response_item["url"] = result.url
+            response_item["index"] = result.listed_index.index_code
+            response_data.append(response_item)
+
+        return JsonResponse(response_data)
+    except DailyPrice.DoesNotExist:
         return JsonError("Stock does not exist")
