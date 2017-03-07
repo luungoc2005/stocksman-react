@@ -2,7 +2,9 @@ from django.http import HttpResponse
 from django.db.models import Max
 from models import StockIndex, Stock, DailyPrice
 from utils import normalize_string
+from datetime import datetime
 from time import mktime
+
 import json
 
 def JsonResponse(data):
@@ -23,6 +25,11 @@ def JsonError(message):
 def index(request):
     return JsonSuccess("This is the stocks index. Try to use any other apis instead")
 
+def get_indices(request):
+    result = list(StockIndex.objects.all())
+    response_data = [obj.index_code for obj in result]
+    return JsonResponse(response_data)
+
 def get_stock(request, stock_code):
     try:
         result = Stock.objects.get(stock_code=normalize_string(stock_code))
@@ -41,6 +48,7 @@ def get_stock(request, stock_code):
             entry["close_date"] = int(mktime(price.close_date.timetuple())*1000)
             entry["close_price"] = price.close_price
             entry["oscillate"] = price.oscillate
+            entry["oscillate_percent"] = price.oscillate_percent
             response_prices.append(entry)
 
         response_data["prices"] = response_prices
@@ -66,21 +74,35 @@ def find_stock(request, code, limit="5"):
     except Stock.DoesNotExist:
         return JsonError("Stock does not exist")
 
-def top_stocks(request, timestamp=0, limit="10"):
+def top_stocks(request, filter="", timestamp=0, limit="7"):
     try:
-        if timestamp == 0:
+        if limit == None:
+            limit = 7
+        limit = min(int(limit), 7)
+        if timestamp == None or int(timestamp) == 0:
             #try to get latest time
             max_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
         else:
-            max_date = timestamp
-        results = DailyPrice.objects.filter(close_date__date=max_date.date()).order_by('-oscillate_percent')[:10]
+            max_date = datetime.fromtimestamp(int(timestamp))
+        results = DailyPrice.objects.filter(close_date__date=max_date.date()).only('stock','close_date','close_price','oscillate')
+
+        if filter != None and filter != "":
+            results = results.filter(stock__listed_index__index_code=normalize_string(filter))
+
+        results = sorted(results.all(), key=lambda x: x.oscillate_percent,
+                        reverse=True)[:limit]
         response_data = []
 
         for result in results:
+            response_stock = result.stock
             response_item = {}
-            response_item["stock_code"] = result.stock_code
-            response_item["url"] = result.url
-            response_item["index"] = result.listed_index.index_code
+            response_item["stock_code"] = response_stock.stock_code
+            response_item["url"] = response_stock.url
+            response_item["index"] = response_stock.listed_index.index_code
+            response_item["close_price"] = result.close_price
+            response_item["oscillate"] = result.oscillate
+            response_item["oscillate_percent"] = result.oscillate_percent
+            response_item["close_date"] = int(mktime(result.close_date.timetuple())*1000)
             response_data.append(response_item)
 
         return JsonResponse(response_data)

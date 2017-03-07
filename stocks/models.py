@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.utils.functional import cached_property
 
 # Create your models here.
 class StockIndex(models.Model):
@@ -48,12 +49,13 @@ class DailyPrice(models.Model):
     "Raw data"
     raw_json = models.CharField(max_length=1024)
 
+    @cached_property
     def oscillate_percent(self):
         "Returns oscillate as percentage"
         if self.close_price == 0:
             return 0
         else:
-            return self.oscillate / self.close_price
+            return round(float(self.oscillate) * 100 / float(self.close_price), 2)
 
 class ErrorLog(models.Model):
     date = models.DateTimeField('Date')

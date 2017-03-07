@@ -6,6 +6,7 @@ import styles from '../css/style.css';
 import Paper from 'material-ui/Paper';
 import SearchBox from './controls/search-box'
 import StockInfo from './controls/stock-info'
+import TopStocks from './controls/top-stocks'
 
 class App extends React.Component {
   constructor() {
@@ -25,8 +26,13 @@ class App extends React.Component {
     let text = this.state.selected_stock;
     return (
       <div className={[styles.mainContent, toast.grid].join(' ')}>
-        <SearchBox onUpdateInput={(item) => this.onSearchInput(item)} />
-        <StockInfo stockCode={text} />
+        <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
+          <SearchBox onUpdateInput={(item) => this.onSearchInput(item)} />
+          <StockInfo stockCode={text} />
+        </div>
+        <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
+          <TopStocks />
+        </div>
       </div>
     );
   }
