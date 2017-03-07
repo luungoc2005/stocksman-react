@@ -21,15 +21,18 @@ export default function PriceList(props) {
     }
     
     let history_list = [];
+    let data_list = props.data.slice();
 
-    for (let i = 0; i < props.data.length; i++) {
-        let price = props.data[i];
+    for (let i = 0; i < data_list.length; i++) {
+        let price = data_list[i];
         history_list.push(
             <ListItem
                 primaryText={`${props.showCode?price.stock_code+': ':''}${formatCurrency(price.close_price)} (${price.oscillate_percent}%)`}
                 secondaryText={props.showDate?new Date(price.close_date).toString():''}
                 leftIcon={trendingIcon(price.oscillate)}
                 key={i}
+                onClick={() => props.onItemSelected?
+                props.onItemSelected(data_list[i].stock_code):undefined}
             />
         );
     }

@@ -17,21 +17,23 @@ class App extends React.Component {
   }
 
   onSearchInput(item) {
-    let current_state = this.state;
-    current_state.selected_stock = item.text;
-    this.setState(current_state)
+    this.setState({
+      selected_stock: item,
+    })
   }
 
   render() {
     let text = this.state.selected_stock;
     return (
-      <div className={[styles.mainContent, toast.grid].join(' ')}>
+      <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
         <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
-          <SearchBox onUpdateInput={(item) => this.onSearchInput(item)} />
+          <SearchBox onUpdateInput={(item) => this.onSearchInput(item.text)} />
           <StockInfo stockCode={text} />
         </div>
         <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
-          <TopStocks />
+          <TopStocks
+              onItemSelected={(item) => this.onSearchInput(item)}
+          />
         </div>
       </div>
     );

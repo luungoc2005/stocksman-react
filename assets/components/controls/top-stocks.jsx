@@ -3,7 +3,6 @@ import React from 'react';
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-import styles from '../../css/style.css';
 
 import $ from 'jquery';
 
@@ -50,16 +49,22 @@ export default class TopStocks extends React.Component {
                 <MenuItem
                     key={i}
                     value={filterList[i]}
-                    primaryText={(!filterList[i]) ? 'All' : filterList[i]}
+                    primaryText={(!filterList[i]) ? 'ALL' : filterList[i]}
                 />
             )
         }
 
         return (
             <Card>
-                <CardHeader title="Top Performers:" className={styles.marginTop20} />
+                <CardHeader title="Top Performers:" />
                 <CardText>
-                    <PriceList data={this.state.data} showCode={true} showDate={false} />
+                    <PriceList 
+                        data={this.state.data} 
+                        showCode={true} 
+                        showDate={false}
+                        onItemSelected={(item) => this.props.onItemSelected?
+                                        this.props.onItemSelected(item):undefined}
+                    />
                 </CardText>
                 <CardActions>
                     <DropDownMenu value={this.state.index_code} onChange={(event, index, value) => this.setFilter(value)}>
