@@ -56,7 +56,7 @@ export default class TopStocks extends React.Component {
 
         return (
             <Card>
-                <CardHeader title="Top Performers:" />
+                <CardHeader title="Top Performers" />
                 <CardText>
                     <PriceList 
                         data={this.state.data} 
