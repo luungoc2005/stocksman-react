@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils.functional import cached_property
+from datetime import datetime, date, timedelta
 
 # Create your models here.
 class StockIndex(models.Model):
@@ -56,6 +57,17 @@ class DailyPrice(models.Model):
             return 0
         else:
             return round(float(self.oscillate) * 100 / float(self.close_price), 2)
+
+    @cached_property
+    def close_price_t3(self):
+        "Returns close price from T+3"
+        t3date = self.close_date + timedelta(days=3)
+        queryset = DailyPrice.objects.filter(stock=self.stock, close_date__date__gte=t3date.date()).only('close_price')
+        result = queryset.first()
+        if result is None:
+            return 0
+        else:
+            return result.close_price
 
 class ErrorLog(models.Model):
     date = models.DateTimeField('Date')

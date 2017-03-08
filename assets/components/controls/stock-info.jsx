@@ -72,7 +72,7 @@ export default class StockInfo extends React.Component {
                 <CardText>
                     <div>
                         Latest Price: {formatCurrency(latest_price.close_price)}
-                        <PriceList data={stock_data.prices} />
+                        <PriceList data={stock_data.prices} showDate={true} />
                     </div>
                 </CardText>
                 <CardActions>

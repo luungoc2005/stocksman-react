@@ -49,6 +49,7 @@ def get_stock(request, stock_code):
             entry = {}
             entry['close_date'] = int(mktime(price.close_date.timetuple())*1000)
             entry['close_price'] = price.close_price
+            entry['close_price_t3'] = price.close_price_t3
             entry['oscillate'] = price.oscillate
             entry['oscillate_percent'] = price.oscillate_percent
             response_prices.append(entry)
