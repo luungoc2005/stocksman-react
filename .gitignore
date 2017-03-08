@@ -69,3 +69,4 @@ webpack-stats.json
 db.sqlite3
 *.pyc
 *.sqlite3
+*.sqlite3-journal
