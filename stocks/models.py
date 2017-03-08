@@ -58,6 +58,7 @@ class DailyPrice(models.Model):
         else:
             return round(float(self.oscillate) * 100 / float(self.close_price), 2)
 
+    # T+3 properties
     @cached_property
     def close_price_t3(self):
         "Returns close price from T+3"
@@ -68,6 +69,21 @@ class DailyPrice(models.Model):
             return 0
         else:
             return result.close_price
+    
+    @cached_property
+    def oscillate_t3(self):
+        t3price = self.close_price_t3
+        if t3price == 0:
+            return 0
+        else:
+            return t3price - self.close_price
+    
+    @cached_property
+    def oscillate_percent_t3(self):
+        if self.close_price == 0:
+            return 0
+        else:
+            return round(float(self.oscillate_t3) * 100 / float(self.close_price), 2)
 
 class ErrorLog(models.Model):
     date = models.DateTimeField('Date')

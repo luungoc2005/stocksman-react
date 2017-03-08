@@ -12,5 +12,7 @@ urlpatterns = [
     url(r'^find_stock/(?P<code>[a-zA-Z0-9]+)/(?:(?P<limit>\d+))$', views.find_stock),
     # top stocks
     url(r'^top_stocks(?:/(?P<filter>[a-zA-Z]+))?(?:/(?P<timestamp>\d+))?(?:/(?P<limit>\d+))?/$',
-        views.top_stocks),
+        views.top_stocks, {'t3': False}),
+    url(r'^top_stocks_t3(?:/(?P<filter>[a-zA-Z]+))?(?:/(?P<timestamp>\d+))?(?:/(?P<limit>\d+))?/$',
+        views.top_stocks, {'t3': True}),
 ]
