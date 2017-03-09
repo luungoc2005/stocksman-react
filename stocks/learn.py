@@ -39,7 +39,7 @@ REGRESSORS = [
                                 epsilon=1e-08, hidden_layer_sizes=(100, 50), learning_rate='adaptive',
                                 learning_rate_init=0.001, max_iter=50000, momentum=0.9,
                                 nesterovs_momentum=True, power_t=0.5, random_state=None, shuffle=True,
-                                solver='sgd', tol=0.000001, validation_fraction=0.1, verbose=True,
+                                solver='sgd', tol=0.000001, validation_fraction=0.1, verbose=False,
                                 warm_start=False), #2
 
     neighbors.KNeighborsRegressor(n_neighbors=5, weights='distance', algorithm='auto',
@@ -130,4 +130,3 @@ def get_learn_model():
     new_rg.date = datetime.utcnow()
     new_rg.model_type = 1 # regressor
     new_rg.save()
-    
