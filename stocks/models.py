@@ -1,8 +1,11 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from datetime import datetime, date, timedelta
+from statistics import mean
+from math import isnan
 
 # Create your models here.
 class StockIndex(models.Model):
@@ -58,6 +61,23 @@ class DailyPrice(models.Model):
         else:
             return round(float(self.oscillate) * 100 / float(self.close_price), 2)
 
+    @cached_property
+    def weekday(self):
+        return self.close_date.weekday()
+
+    @cached_property
+    def variation(self):
+        return self.close_price - self.open_price
+    
+    # Moving average
+    @cached_property
+    def moving_average(self):
+        AVERAGE_LIMIT=5 #MA of 5
+        queryset = DailyPrice.objects.filter(stock=self.stock,
+                close_date__date__lte=self.close_date.date()).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
+        avg = mean([float(o.close_price) for o in list(queryset) if o.close_price ])
+        return avg if not isnan(avg) else 0
+
     # T+3 properties
     @cached_property
     def close_price_t3(self):
@@ -89,3 +109,9 @@ class ErrorLog(models.Model):
     date = models.DateTimeField('Date')
     dest_url = models.CharField(max_length=500)
     raw_json = models.CharField(max_length=1024)
+
+class LearnModel(models.Model):
+    model_type = models.IntegerField(default=0)
+    data = models.BinaryField()
+    date = models.DateTimeField()
+    accuracy = models.DecimalField(max_digits=10, decimal_places=8)
