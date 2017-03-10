@@ -72,7 +72,7 @@ REGRESSORS = [
 
 def create_learn_model():
     scaler, input_data = get_eval_data()
-    
+
     clf_array = []
     accuracy_array = []
 

@@ -5,16 +5,19 @@ from pytz import timezone
 from time import mktime
 
 from os import listdir
-from os.path import join
+from os.path import join, abspath, dirname
 from uuid import uuid4
 
 from urllib import request
 import codecs
 import json
 
+APP_ROOT = dirname(abspath(__file__))
+
 def random_file_name(path = '', prefix = ''):
-    return join(path, prefix + str(int(mktime(datetime.utcnow().timetuple()))) + '-' \
-            + str(uuid4()))
+    return join(APP_ROOT, path, 
+            prefix + str(int(mktime(datetime.utcnow().timetuple()))) + '-' \
+                    + str(uuid4()))
 
 def get_latest_weekday():
     today_date = date.today()
