@@ -2,11 +2,19 @@ from .models import Stock, DailyPrice
 
 from datetime import datetime, date, timedelta
 from pytz import timezone
+from time import mktime
+
 from os import listdir
 from os.path import join
+from uuid import uuid4
+
 from urllib import request
 import codecs
 import json
+
+def random_file_name(path = '', prefix = ''):
+    return join(path, prefix + str(int(mktime(datetime.utcnow().timetuple()))) + '-' \
+            + str(uuid4()))
 
 def get_latest_weekday():
     today_date = date.today()

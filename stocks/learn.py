@@ -1,4 +1,6 @@
 from .learndata import *
+from .utils import random_file_name
+
 from sklearn import preprocessing, neural_network, neighbors, ensemble, svm, discriminant_analysis, kernel_ridge, tree
 from datetime import datetime
 
@@ -86,7 +88,7 @@ def create_learn_model():
         if error == False:
             print('Accuracy: ' + str(accuracy))
             clf_array.append(clf)
-            accuracy_array.append(abs(accuracy) if abs(accuracy) <= 1 else accuracy)
+            accuracy_array.append(accuracy)
         else:
             print('Error encountered')
             clf_array.append(None)
@@ -96,9 +98,12 @@ def create_learn_model():
     print('Best classification model: ' + str(index_clf) + ' - Accuracy: ' + str(value_clf))
 
     # Save the classifier
+    cl_file = random_file_name('models', 'cl_')
+    pickle.dump(clf_array[index_clf], open(cl_file, 'wb'))
+
     new_clf = LearnModel()
     new_clf.accuracy = value_clf
-    new_clf.data = pickle.dumps(clf_array[index_clf])
+    new_clf.data = cl_file
     new_clf.date = datetime.utcnow()
     new_clf.model_type = 0 # classifier
     new_clf.scaler = scaler
@@ -119,7 +124,7 @@ def create_learn_model():
         if error == False:
             print('Accuracy: ' + str(rg_accuracy))
             rg_array.append(reg)
-            rg_accuracy_array.append(abs(rg_accuracy) if abs(rg_accuracy) <= 1 else rg_accuracy)
+            rg_accuracy_array.append(rg_accuracy)
         else:
             print('Error encountered')
             rg_array.append(None)
@@ -129,9 +134,12 @@ def create_learn_model():
     print('Best regression model: ' + str(index_rg) + ' - Accuracy: ' + str(value_rg))
 
     # Save the regressor
+    rg_file = random_file_name('models', 'rg_')
+    pickle.dump(rg_array[index_rg], open(rg_file, 'wb'))
+
     new_rg = LearnModel()
     new_rg.accuracy = value_rg
-    new_rg.data = pickle.dumps(rg_array[index_rg])
+    new_rg.data = rg_file
     new_rg.date = datetime.utcnow()
     new_rg.model_type = 1 # regressor
     new_rg.scaler = scaler
@@ -146,10 +154,10 @@ def get_learn_model(timestamp=0):
         clf_model = LearnModel.objects.filter(model_type=0).latest('date')
         rg_model = LearnModel.objects.filter(model_type=1).latest('date')
 
-    clf = pickle.loads(clf_model.data)
-    reg = pickle.loads(rg_model.data)
-    clf_scaler = pickle.loads(clf_model.scaler.data)
-    reg_scaler = pickle.loads(rg_model.scaler.data)
+    clf = pickle.load(open(clf_model.data, 'rb'))
+    reg = pickle.load(open(rg_model.data, 'rb'))
+    clf_scaler = pickle.load(open(clf_model.scaler.data, 'rb'))
+    reg_scaler = pickle.load(open(rg_model.scaler.data, 'rb'))
 
     return clf_scaler, clf, reg_scaler, reg
 
@@ -168,7 +176,7 @@ def predict_stock(code='', timestamp=0):
 
 
     clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
-    
+
     input_data = numpy.array(get_input_array(price), dtype='f8')  
     input_data = input_data.reshape(1, -1)
 
@@ -178,5 +186,25 @@ def predict_stock(code='', timestamp=0):
     predict_chance = clf.predict_proba(clf_input)
     predict_oscillate = reg.predict(reg_input)
 
-    return code, predict_chance, predict_oscillate
-    
+    return code, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
+
+def price_adjusted(predict_chance = [], predict_oscillate = []):
+    results = []
+
+    for i in range(len(predict_chance)):            
+        positive_chance=predict_chance[i][0]
+        negative_chance=predict_chance[i][1]
+        oscillate=predict_oscillate[i]
+
+        if (positive_chance > negative_chance):
+            if (oscillate > 0):
+                results.append(oscillate * positive_chance)
+            else:
+                results.append(0)
+        else:
+            if (oscillate <= 0):
+                results.append(oscillate * negative_chance)
+            else:
+                results.append(0)
+
+    return results

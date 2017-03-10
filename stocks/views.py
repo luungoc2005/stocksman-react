@@ -7,6 +7,8 @@ from .utils import normalize_string
 from datetime import datetime, timedelta
 from time import mktime
 
+from .learn import predict_stock
+
 import json
 
 def JsonResponse(data):
@@ -131,3 +133,15 @@ def top_stocks(request, filter='', timestamp=0, limit='7', t3=False):
         return JsonResponse(response_data)
     except DailyPrice.DoesNotExist:
         return JsonError('Stock does not exist')
+
+def project_stock(request, stock_code):
+    code, cls_prob, reg, adj = predict_stock(stock_code)
+    
+    response_data = {}
+    response_data['stock_code'] = code
+    response_data['prob_negative'] = cls_prob[0][0]
+    response_data['prob_positive'] = cls_prob[0][1]
+    response_data['future_price'] = reg[0]
+    response_data['adj_price'] = adj[0]
+
+    return JsonResponse(response_data)

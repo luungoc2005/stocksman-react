@@ -7,6 +7,7 @@ from operator import itemgetter
 
 from django.db.models import Max
 from django.forms.models import model_to_dict
+from .utils import random_file_name
 
 from sklearn import preprocessing, model_selection, neural_network
 import numpy
@@ -48,9 +49,12 @@ def get_eval_data():
     
     inputs_scaled = scaler.transform(inputs)
     
+    scale_file = random_file_name('scalers', 'scaler_')
+    pickle.dump(scaler, open(scale_file, 'wb'))
+
     scale_model = Scaler()
     scale_model.date = datetime.utcnow()
-    scale_model.data = pickle.dumps(scaler)
+    scale_model.data = scale_file
     scale_model.save()
 
     # outputs_scaled = preprocessing.scale(outputs)

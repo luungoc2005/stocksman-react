@@ -127,11 +127,11 @@ class ErrorLog(models.Model):
 
 class Scaler(models.Model):
     date = models.DateTimeField()
-    data = models.BinaryField()
+    data = models.CharField(max_length=255)
 
 class LearnModel(models.Model):
     scaler = models.ForeignKey(Scaler, on_delete=models.CASCADE)
     model_type = models.IntegerField(default=0)
-    data = models.BinaryField()
+    data = models.CharField(max_length=255)
     date = models.DateTimeField()
     accuracy = models.DecimalField(max_digits=10, decimal_places=8)

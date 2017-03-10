@@ -2,49 +2,59 @@ import React from 'react';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
 import PriceList from './price-list'
+import Chip from 'material-ui/Chip';
+import {lightGreen50, deepOrange50, amber50} from 'material-ui/styles/colors';
 
 import $ from 'jquery';
 
-const STOCK_URL = "/stocks/get_stock/{1}";
+const STOCK_URL = "/stocks/get_stock/{1}/";
+const PREDICT_URL = "/stocks/project_stock/{1}/"
 
 export default class StockInfo extends React.Component {
     constructor() {
         super();
         this.state = {
-            close_price: 0,
-            close_date: "",
-            oscillate: 0,
-            oscillate_percent: 0,
-            prices: []
+            data: [],
+            predict: [],
         };
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.stockCode != nextProps.stockCode) {
             this.getStockData(nextProps.stockCode);
+            this.getPredictData(nextProps.stockCode);
         }
     }
 
     refreshData() {
         this.getStockData(this.props.stockCode);
+        this.getPredictData(this.props.stockCode);
     }
 
     getStockData(query) {
-        if (query.length === 3) {
+        if (query.length >= 3) {
             $.getJSON(STOCK_URL.replace("{1}", query)).done((data) => {
-                this.setState(data);
+                this.setState({data: data});
+            });
+        }
+    }
+
+    getPredictData(query) {
+        if (query.length >= 3) {
+            $.getJSON(PREDICT_URL.replace("{1}", query)).done((data) => {
+                this.setState({predict: data});
             });
         }
     }
 
     render () {
-        let stock_data = this.state;
+        let stock_data = this.state.data;
         
         let formatCurrency = (text) => {
             return "VND " + text.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
         }
         
-        if (stock_data.prices.length > 0) {
+        if (stock_data.prices !== undefined && stock_data.prices.length > 0) {
             for (let i = 0; i < stock_data.prices.length; i++) {
                 let price = stock_data.prices[i];
                 price.close_date = parseInt(price.close_date);
@@ -61,7 +71,7 @@ export default class StockInfo extends React.Component {
             oscillate_percent: 0,
         }
 
-        let latest_price = (stock_data.prices.length > 0)?stock_data.prices[0]:default_price;
+        let latest_price = (stock_data.prices !== undefined && stock_data.prices.length > 0)?stock_data.prices[0]:default_price;
 
         return (
             <Card>
@@ -72,6 +82,7 @@ export default class StockInfo extends React.Component {
                 <CardText>
                     <div>
                         Latest Price: {formatCurrency(latest_price.close_price)}
+                        <Chip backgroundColor={lightGreen50}>{this.state.predict.adj_price}</Chip>
                         <PriceList data={stock_data.prices} showDate={true} />
                     </div>
                 </CardText>
