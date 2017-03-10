@@ -51,8 +51,13 @@ export default class StockInfo extends React.Component {
         let stock_data = this.state.data;
         
         let formatCurrency = (text) => {
-            return "VND " + text.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-        }
+            if (text) {
+                return "VND " + text.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+            }
+            else {
+                return "";
+            };
+        };
         
         if (stock_data.prices !== undefined && stock_data.prices.length > 0) {
             for (let i = 0; i < stock_data.prices.length; i++) {
@@ -82,7 +87,9 @@ export default class StockInfo extends React.Component {
                 <CardText>
                     <div>
                         Latest Price: {formatCurrency(latest_price.close_price)}
-                        <Chip backgroundColor={lightGreen50}>{this.state.predict.adj_price}</Chip>
+                        <Chip backgroundColor={lightGreen50}>
+                            {'Predicted: ' + formatCurrency(this.state.predict.adj_price)}                            
+                        </Chip>
                         <PriceList data={stock_data.prices} showDate={true} />
                     </div>
                 </CardText>

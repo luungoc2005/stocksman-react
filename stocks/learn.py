@@ -163,7 +163,7 @@ def get_learn_model(timestamp=0):
 
 def predict_stock(code='', timestamp=0):
     queryset = DailyPrice.objects.all()
-    
+
     if code != '':
         queryset = queryset.filter(stock__stock_code=code)
 
@@ -174,9 +174,9 @@ def predict_stock(code='', timestamp=0):
     else:
         price = queryset.latest('close_date')
 
-
     clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
 
+    current_price = price.close_price
     input_data = numpy.array(get_input_array(price), dtype='f8')  
     input_data = input_data.reshape(1, -1)
 
@@ -186,7 +186,7 @@ def predict_stock(code='', timestamp=0):
     predict_chance = clf.predict_proba(clf_input)
     predict_oscillate = reg.predict(reg_input)
 
-    return code, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
+    return current_price, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
 
 def price_adjusted(predict_chance = [], predict_oscillate = []):
     results = []

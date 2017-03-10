@@ -59,7 +59,7 @@ class DailyPrice(models.Model):
         if self.close_price == 0:
             return 0
         else:
-            return round(float(self.oscillate) * 100 / float(self.close_price), 2)
+            return float(self.oscillate) / float(self.close_price)
 
     @cached_property
     def weekday(self):
@@ -118,7 +118,7 @@ class DailyPrice(models.Model):
         if self.close_price == 0:
             return 0
         else:
-            return round(float(self.oscillate_t3) * 100 / float(self.close_price), 2)
+            return float(self.oscillate_t3) / float(self.close_price)
 
 class ErrorLog(models.Model):
     date = models.DateTimeField('Date')
