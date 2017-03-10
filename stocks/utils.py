@@ -99,3 +99,9 @@ def import_from_directory(dirname):
                     price_from_json(line_string)
                 except:
                     print('Error at ' + line_string + ' in ' + full_path)
+
+def find_events():
+    for price in list(DailyPrice.objects.all()):
+        if price.is_event:
+            print('Event: ' + price.stock.stock_code + ' on ' + str(price.close_date) + ': ' \
+            + str(price.previous_close_price) + ' -> ' + str(price.close_price))

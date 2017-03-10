@@ -1,9 +1,10 @@
 from .learndata import *
-from sklearn import neural_network, neighbors, ensemble, svm, discriminant_analysis, kernel_ridge, tree
+from sklearn import preprocessing, neural_network, neighbors, ensemble, svm, discriminant_analysis, kernel_ridge, tree
 from datetime import datetime
 
-from stocks.models import LearnModel
+from stocks.models import LearnModel, DailyPrice, Stock
 
+import numpy
 import pickle
 
 CLASSIFIERS = [
@@ -67,12 +68,13 @@ REGRESSORS = [
     C=1.0, epsilon=0.1, shrinking=True, cache_size=200, verbose=False, max_iter=-1), #8
 ]
 
-def get_learn_model():
-    X_train, X_test, y_train, y_test = get_eval_data()
+def create_learn_model():
+    scaler, input_data = get_eval_data()
     
     clf_array = []
     accuracy_array = []
 
+    X_train, X_test, y_train, y_test = input_data[0]
     for clf in CLASSIFIERS:
         try:
             error=False
@@ -84,7 +86,7 @@ def get_learn_model():
         if error == False:
             print('Accuracy: ' + str(accuracy))
             clf_array.append(clf)
-            accuracy_array.append(abs(accuracy))
+            accuracy_array.append(abs(accuracy) if abs(accuracy) <= 1 else accuracy)
         else:
             print('Error encountered')
             clf_array.append(None)
@@ -99,10 +101,13 @@ def get_learn_model():
     new_clf.data = pickle.dumps(clf_array[index_clf])
     new_clf.date = datetime.utcnow()
     new_clf.model_type = 0 # classifier
+    new_clf.scaler = scaler
     new_clf.save()
 
     rg_array = []
     rg_accuracy_array = []
+    
+    X_train, X_test, y_train, y_test = input_data[1]
     for reg in REGRESSORS:
         try:
             error=False
@@ -114,7 +119,7 @@ def get_learn_model():
         if error == False:
             print('Accuracy: ' + str(rg_accuracy))
             rg_array.append(reg)
-            rg_accuracy_array.append(abs(rg_accuracy))
+            rg_accuracy_array.append(abs(rg_accuracy) if abs(rg_accuracy) <= 1 else rg_accuracy)
         else:
             print('Error encountered')
             rg_array.append(None)
@@ -129,4 +134,49 @@ def get_learn_model():
     new_rg.data = pickle.dumps(rg_array[index_rg])
     new_rg.date = datetime.utcnow()
     new_rg.model_type = 1 # regressor
+    new_rg.scaler = scaler
     new_rg.save()
+
+def get_learn_model(timestamp=0):
+    if timestamp > 0:
+        lookup_date = datetime.fromtimestamp(int(timestamp))
+        clf_model = LearnModel.objects.filter(model_type=0, date__lte=lookup_date).earliest('date')
+        rg_model = LearnModel.objects.filter(model_type=1, date__lte=lookup_date).earliest('date')
+    else:
+        clf_model = LearnModel.objects.filter(model_type=0).latest('date')
+        rg_model = LearnModel.objects.filter(model_type=1).latest('date')
+
+    clf = pickle.loads(clf_model.data)
+    reg = pickle.loads(rg_model.data)
+    clf_scaler = pickle.loads(clf_model.scaler.data)
+    reg_scaler = pickle.loads(rg_model.scaler.data)
+
+    return clf_scaler, clf, reg_scaler, reg
+
+def predict_stock(code='', timestamp=0):
+    queryset = DailyPrice.objects.all()
+    
+    if code != '':
+        queryset = queryset.filter(stock__stock_code=code)
+
+    if timestamp > 0:
+        lookup_date = datetime.fromtimestamp(int(timestamp))
+        queryset = queryset.filter(close_date__lte=lookup_date)
+        price = queryset.earliest('close_date')
+    else:
+        price = queryset.latest('close_date')
+
+
+    clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
+    
+    input_data = numpy.array(get_input_array(price), dtype='f8')  
+    input_data = input_data.reshape(1, -1)
+
+    clf_input = clf_scaler.transform(input_data)
+    reg_input = reg_scaler.transform(input_data)
+
+    predict_chance = clf.predict_proba(clf_input)
+    predict_oscillate = reg.predict(reg_input)
+
+    return code, predict_chance, predict_oscillate
+    

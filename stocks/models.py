@@ -78,6 +78,21 @@ class DailyPrice(models.Model):
         avg = mean([float(o.close_price) for o in list(queryset) if o.close_price ])
         return avg if not isnan(avg) else 0
 
+    # Previous
+    @cached_property
+    def previous_close_price(self):
+        try:
+            query = DailyPrice.objects.filter(stock=self.stock,
+                    close_date__date__lt=self.close_date.date()).only('close_price').latest('close_date')
+            return query.close_price
+        except:
+            return self.close_price
+    
+    @cached_property
+    def is_event(self):
+        THRESHOLD = -0.1 # 10% price shock to indicate an event
+        return 1 if ((float(self.close_price) - float(self.previous_close_price)) / float(self.close_price)) <= THRESHOLD else 0
+
     # T+3 properties
     @cached_property
     def close_price_t3(self):
@@ -110,7 +125,12 @@ class ErrorLog(models.Model):
     dest_url = models.CharField(max_length=500)
     raw_json = models.CharField(max_length=1024)
 
+class Scaler(models.Model):
+    date = models.DateTimeField()
+    data = models.BinaryField()
+
 class LearnModel(models.Model):
+    scaler = models.ForeignKey(Scaler, on_delete=models.CASCADE)
     model_type = models.IntegerField(default=0)
     data = models.BinaryField()
     date = models.DateTimeField()
