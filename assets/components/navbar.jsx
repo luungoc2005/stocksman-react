@@ -10,7 +10,7 @@ class Navbar extends React.Component {
     return (
         <AppBar
             className={toast.grid}
-            title="Material Theme Boilerplate"
+            title="Stocks Machine Learning Experiment"
             iconElementRight=
             {
               <AboutDialog />

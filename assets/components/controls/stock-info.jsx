@@ -27,6 +27,7 @@ export default class StockInfo extends React.Component {
     }
 
     refreshData() {
+        this.setState({ data: {}, predict: {} });
         this.getStockData(this.props.stockCode);
         this.getPredictData(this.props.stockCode);
     }
