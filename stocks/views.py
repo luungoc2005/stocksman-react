@@ -52,8 +52,8 @@ def get_stock(request, stock_code):
             entry['close_date'] = int(mktime(price.close_date.timetuple())*1000)
             entry['close_price'] = price.close_price
             # entry['close_price_t3'] = price.close_price_t3 # for testing T+3
-            entry['oscillate'] = price.oscillate
-            entry['oscillate_percent'] = price.oscillate_percent
+            entry['oscillate'] = round(price.oscillate * 100, 2)
+            entry['oscillate_percent'] = round(price.oscillate_percent * 100, 2)
             response_prices.append(entry)
 
         response_data['prices'] = response_prices
@@ -122,11 +122,11 @@ def top_stocks(request, filter='', timestamp=0, limit='7', t3=False):
             if t3 == True:
                 response_item['close_price'] = result.close_price_t3
                 response_item['oscillate'] = result.oscillate_t3
-                response_item['oscillate_percent'] = result.oscillate_percent_t3
+                response_item['oscillate_percent'] = round(result.oscillate_percent_t3 * 100, 2)
             else:
                 response_item['close_price'] = result.close_price
                 response_item['oscillate'] = result.oscillate
-                response_item['oscillate_percent'] = result.oscillate_percent
+                response_item['oscillate_percent'] = round(result.oscillate_percent * 100, 2)
 
             response_data.append(response_item)
 
