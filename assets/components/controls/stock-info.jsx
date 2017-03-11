@@ -3,7 +3,7 @@ import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'mat
 import FlatButton from 'material-ui/FlatButton';
 import PriceList from './price-list'
 import Chip from 'material-ui/Chip';
-import {lightGreen50, deepOrange50, amber50} from 'material-ui/styles/colors';
+import {lightGreen100, deepOrange100, amber100} from 'material-ui/styles/colors';
 
 import $ from 'jquery';
 
@@ -78,6 +78,16 @@ export default class StockInfo extends React.Component {
         }
 
         let latest_price = (stock_data.prices !== undefined && stock_data.prices.length > 0)?stock_data.prices[0]:default_price;
+        let predict_color = lightGreen100;
+        let predicted_price = this.state.predict.adj_price || 0;
+        
+        if (predicted_price > latest_price.close_price) {
+            predict_color = lightGreen100
+        } else if (predicted_price = latest_price.close_price) {
+            predict_color = deepOrange100
+        } else {
+            predict_color = amber100
+        }
 
         return (
             <Card>
@@ -87,10 +97,11 @@ export default class StockInfo extends React.Component {
                 />
                 <CardText>
                     <div>
-                        Latest Price: {formatCurrency(latest_price.close_price)}
-                        <Chip backgroundColor={lightGreen50}>
-                            {'Predicted: ' + formatCurrency(this.state.predict.adj_price)}                            
-                        </Chip>
+                        <span>Latest Price: {formatCurrency(latest_price.close_price)}
+                            <Chip backgroundColor={predict_color}>
+                                {'Predicted: ' + formatCurrency(this.state.predict.adj_price)}                            
+                            </Chip>
+                        </span>
                         <PriceList data={stock_data.prices} showDate={true} />
                     </div>
                 </CardText>

@@ -176,8 +176,9 @@ def predict_stock(code='', timestamp=0):
 
     clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
 
+    stock_code = price.stock.stock_code
     current_price = price.close_price
-    input_data = numpy.array(get_input_array(price), dtype='f8')  
+    input_data = numpy.array(get_input_array(price), dtype='f8')
     input_data = input_data.reshape(1, -1)
 
     clf_input = clf_scaler.transform(input_data)
@@ -186,14 +187,45 @@ def predict_stock(code='', timestamp=0):
     predict_chance = clf.predict_proba(clf_input)
     predict_oscillate = reg.predict(reg_input)
 
-    return current_price, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
+    return stock_code, current_price, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
+
+def predict_all(timestamp=0):
+    if timestamp == None or int(timestamp) == 0:
+        #try to get latest time
+        max_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
+        if t3 == True:
+            num_days = 3
+            for i in range(3,6):
+                min_weekday = (max_date - timedelta(days=num_days)).weekday()
+                if min_weekday == 5 or min_weekday == 6:
+                    num_days = i
+                else:
+                    break
+            max_date = max_date - timedelta(days=num_days)
+    else:
+        max_date = datetime.fromtimestamp(int(timestamp))
+    results = list(DailyPrice.objects.filter(close_date__date=max_date.date()))
+
+    clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
+
+    stock_code = [price.stock.stock_code for price in results]
+    current_price = [price.close_price for price in results]
+    input_data = numpy.array([get_input_array(price) for price in list(results)], dtype='f8')
+
+    clf_input = clf_scaler.transform(input_data)
+    reg_input = reg_scaler.transform(input_data)
+
+    predict_chance = clf.predict_proba(clf_input)
+    predict_oscillate = reg.predict(reg_input)
+
+    return stock_code, current_price, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
 
 def price_adjusted(predict_chance = [], predict_oscillate = []):
     results = []
 
-    for i in range(len(predict_chance)):            
-        positive_chance=predict_chance[i][0]
-        negative_chance=predict_chance[i][1]
+    for i in range(len(predict_chance)):        
+        negative_chance=predict_chance[i][0] 
+        positive_chance=predict_chance[i][1]
         oscillate=predict_oscillate[i]
 
         if (positive_chance > negative_chance):
