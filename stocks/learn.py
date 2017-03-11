@@ -193,15 +193,6 @@ def predict_all(timestamp=0):
     if timestamp == None or int(timestamp) == 0:
         #try to get latest time
         max_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
-        if t3 == True:
-            num_days = 3
-            for i in range(3,6):
-                min_weekday = (max_date - timedelta(days=num_days)).weekday()
-                if min_weekday == 5 or min_weekday == 6:
-                    num_days = i
-                else:
-                    break
-            max_date = max_date - timedelta(days=num_days)
     else:
         max_date = datetime.fromtimestamp(int(timestamp))
     results = list(DailyPrice.objects.filter(close_date__date=max_date.date()))

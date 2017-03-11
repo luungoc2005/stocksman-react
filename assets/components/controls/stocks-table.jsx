@@ -22,13 +22,13 @@ export default function StocksTable(props) {
                 let rowColumns = [];
                 for (let a = 0; a < tableRow.length; a++) {
                     rowColumns.push(
-                        <TableRowColumn>
+                        <TableRowColumn key={a}>
                             {tableRow[a]}
                         </TableRowColumn>
                     );
                 }
                 rows.push(
-                    <TableRow>
+                    <TableRow key={i}>
                         {rowColumns}
                     </TableRow>
                 );
@@ -42,13 +42,19 @@ export default function StocksTable(props) {
                 title = {props.tableTitle}
             />
             <CardText>
-                <Table>
-                    <TableHeader>
+                <Table
+                    height = {props.height}>
+                    <TableHeader
+                        adjustForCheckbox={false}
+                        displaySelectAll={false}
+                    >
                         <TableRow>
                             {header}
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody
+                        displayRowCheckbox={false}
+                    >
                         {rows}
                     </TableBody>
                 </Table>

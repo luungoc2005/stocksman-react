@@ -7,7 +7,7 @@ from .utils import normalize_string
 from datetime import datetime, timedelta
 from time import mktime
 
-from .learn import predict_stock
+from .learn import predict_stock, predict_all
 
 import json
 
@@ -146,7 +146,10 @@ def project_stock(request, stock_code):
 
     return JsonResponse(response_data)
 
-def predict_all(request, timestamp=0):
+def project_all(request, timestamp=0):
+    if timestamp == None:
+        timestamp = 0
+
     code, price, cls_prob, reg, adj = predict_all(timestamp)
 
     response = []
@@ -155,6 +158,7 @@ def predict_all(request, timestamp=0):
         response_data['stock_code'] = code[i]
         response_data['prob_negative'] = cls_prob[i][0]
         response_data['prob_positive'] = cls_prob[i][1]
+        response_data['current_price'] = price[i]
         response_data['future_price'] = int(round((1 + reg[i]) * price[i], 0))
         response_data['adj_price'] = int(round((1 + adj[i]) * price[i], 0))
         response.append(response_data)
