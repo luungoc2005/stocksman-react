@@ -89,6 +89,11 @@ export default class StockInfo extends React.Component {
             predict_color = amber100
         }
 
+        let predictedString = ''
+        if (this.state.predict) {
+            predictedString = `Predicted: ${formatCurrency(this.state.predict.adj_price)} (${Math.round(this.state.predict.prob_positive * 10000) / 100}% to increase)`
+        }
+
         return (
             <Card>
                 <CardHeader
@@ -99,7 +104,7 @@ export default class StockInfo extends React.Component {
                     <div>
                         <span>Latest Price: {formatCurrency(latest_price.close_price)}
                             <Chip backgroundColor={predict_color}>
-                                {'Predicted: ' + formatCurrency(this.state.predict.adj_price)}                            
+                                {predictedString}                        
                             </Chip>
                         </span>
                         <PriceList data={stock_data.prices} showDate={true} />

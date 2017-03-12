@@ -114,5 +114,5 @@ def import_from_directory(dirname):
 def find_events():
     for price in list(DailyPrice.objects.all()):
         if price.is_event:
-            print('Event: ' + price.stock.stock_code + ' on ' + str(price.close_date) + ': ' \
+            print('Event: ' + price.stock.stock_code + ' on ' + str(price.close_date.date()) + ': ' \
             + str(price.previous_close_price) + ' -> ' + str(price.close_price))

@@ -1,22 +1,15 @@
 import React from 'react';
 import {Table, TableBody, TableFooter, TableHeader, TableHeaderColumn, TableRow, TableRowColumn}
   from 'material-ui/Table';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 
 export default function StocksTable(props) {
     let data = props.data || []
+    let headdata = props.header || []
     
     let header = [];
     let rows = [];
-    if (data.length > 1 && data[0].length > 1) {
-        for (let i = 0; i < data[0].length; i++) {
-            header.push(
-                <TableHeaderColumn>
-                    {data[0][i]}
-                </TableHeaderColumn>
-            );
-        }
-        for (let i = 1; i < data.length; i++) {
+    if (data.length > 0 && data[0].length > 1) {
+        for (let i = 0; i < data.length; i++) {
             let tableRow = data[i];
             if (tableRow.length > 0) {
                 let rowColumns = [];
@@ -35,13 +28,18 @@ export default function StocksTable(props) {
             }
         }
     }
+    
+    if (props.header && props.header.length > 0) {
+        for (let i = 0; i < headdata.length; i++) {
+            header.push(
+                <TableHeaderColumn key={i}>
+                    {headdata[i]}
+                </TableHeaderColumn>
+            );
+        }
+    }
 
     return (
-        <Card>
-            <CardHeader
-                title = {props.tableTitle}
-            />
-            <CardText>
                 <Table
                     height = {props.height}>
                     <TableHeader
@@ -58,7 +56,5 @@ export default function StocksTable(props) {
                         {rows}
                     </TableBody>
                 </Table>
-            </CardText>
-        </Card>
     );
 }
