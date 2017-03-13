@@ -17,14 +17,19 @@ MIN_DAYS = 60
 
 def get_input_array(price):
     ret_list = [float(o) for o in list(model_to_dict(price,
-        fields=['close_price', 'open_price', 'avg_price', 'oscillate',
+        fields=['close_price', 'oscillate',
                 'dividend', 'eps', 'beta']).values())]
                 # 'bvps', 'capital_level', 'curr_room', 'klcplh', 'klcpny',
                 # 'total_vol', 'trading_vol',
                 # 'dec_pb', 'dec_pe', 'fw_pe'
                 # 'buy_redundancy', 'sell_redundancy',
+        # Changelog: 1. Added Trading_vol, Total_vol: Accuracy 0.6 0.19
+        # Changelog: Removed Trading_vol, Total_vol, open_price, avg_price
+
     ret_list.extend([float(o == price.weekday) for o in range(0,4)]) # weekday
-    ret_list.extend([price.variation, price.oscillate_percent, price.moving_average, price.is_event])
+    ret_list.extend([price.variation, price.oscillate_percent, price.is_event])
+    ret_list.extend([price.short_moving_average, price.long_moving_average,
+                    price.short_exp_moving_average, price.long_exp_moving_average])
     return ret_list
 
 def get_output_class(price):
@@ -36,7 +41,7 @@ def get_output_value(price):
 def get_eval_data():
     lookup_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max'] - timedelta(days=MIN_DAYS)
     results = list(DailyPrice.objects.filter(close_date__gte=lookup_date).defer('close_date', 'stock', 'raw_json'))
-    results = [o for o in results if o != None and o.close_price_t3 > 0 and o.moving_average > 0]
+    results = [o for o in results if o != None and o.close_price_t3 > 0 and o.close_price > 0]
     print('Length: ' + str(len(results)))
     # shuffle(results)
 

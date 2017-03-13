@@ -69,14 +69,54 @@ class DailyPrice(models.Model):
     def variation(self):
         return self.close_price - self.open_price
     
-    # Moving average
+    # Technical indicators
     @cached_property
-    def moving_average(self):
+    def short_moving_average(self):
         AVERAGE_LIMIT=5 #MA of 5
-        queryset = DailyPrice.objects.filter(stock=self.stock,
-                close_date__date__lte=self.close_date.date()).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
-        avg = mean([float(o.close_price) for o in list(queryset) if o.close_price ])
+        queryset = DailyPrice.objects.filter(stock=self.stock).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
+        avg = mean([float(o.close_price) for o in list(queryset) if o.close_price > 0])
         return avg if not isnan(avg) else 0
+
+    @cached_property
+    def long_moving_average(self):
+        AVERAGE_LIMIT=20 #MA of 15
+        queryset = DailyPrice.objects.filter(stock=self.stock).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
+        avg = mean([float(o.close_price) for o in list(queryset) if o.close_price > 0])
+        return avg if not isnan(avg) else 0
+
+    @cached_property
+    def short_exp_moving_average(self):
+        AVERAGE_LIMIT=5 #MA of 5
+        queryset = DailyPrice.objects.filter(stock=self.stock).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
+        prices = [float(o.close_price) for o in list(queryset) if o.close_price > 0]
+        multiplier = 2.0 / (float(len(prices)) + 1.0)
+        period = len(prices)
+        if period == 0:
+            return 0
+        elif period == 1:
+            return prices[0]
+        else:
+            ema = prices[0]
+            for idx, value in enumerate(prices, start=1):
+                ema += (float(value) - ema) * multiplier
+            return ema
+
+    @cached_property
+    def long_exp_moving_average(self):
+        AVERAGE_LIMIT=20 #MA of 5
+        queryset = DailyPrice.objects.filter(stock=self.stock).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
+        prices = [float(o.close_price) for o in list(queryset) if o.close_price > 0]
+        multiplier = 2.0 / (float(len(prices)) + 1.0)
+        period = len(prices)
+        if period == 0:
+            return 0
+        elif period == 1:
+            return prices[0]
+        else:
+            ema = prices[0]
+            for idx, value in enumerate(prices, start=1):
+                ema += (float(value) - ema) * multiplier
+            return ema
 
     # Previous
     @cached_property

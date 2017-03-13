@@ -54,6 +54,9 @@ def get_stock(request, stock_code):
             # entry['close_price_t3'] = price.close_price_t3 # for testing T+3
             entry['oscillate'] = round(price.oscillate * 100, 2)
             entry['oscillate_percent'] = round(price.oscillate_percent * 100, 2)
+            entry['short_ma'] = price.short_moving_average
+            entry['long_ma'] = price.long_moving_average
+            entry['short_exp_ma'] = price.short_exp_moving_average
             response_prices.append(entry)
 
         response_data['prices'] = response_prices
