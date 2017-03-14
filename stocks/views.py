@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.db.models import Max
 
 from .models import StockIndex, Stock, DailyPrice
-from .utils import normalize_string
+from .utils import normalize_string, get_latest_weekday
 
 from datetime import datetime, timedelta
 from time import mktime
@@ -41,6 +41,7 @@ def get_stock(request, stock_code):
         response_data = {}
         response_data['stock_code'] = result.stock_code
         response_data['url'] = result.url
+        response_data['company_name'] = result.company_name
         response_data['index'] = result.listed_index.index_code
 
         # daily prices
@@ -54,9 +55,9 @@ def get_stock(request, stock_code):
             # entry['close_price_t3'] = price.close_price_t3 # for testing T+3
             entry['oscillate'] = round(price.oscillate * 100, 2)
             entry['oscillate_percent'] = round(price.oscillate_percent * 100, 2)
-            entry['short_ma'] = price.short_moving_average
-            entry['long_ma'] = price.long_moving_average
-            entry['short_exp_ma'] = price.short_exp_moving_average
+            # entry['short_ma'] = price.short_moving_average
+            # entry['long_ma'] = price.long_moving_average
+            # entry['short_exp_ma'] = price.short_exp_moving_average
             response_prices.append(entry)
 
         response_data['prices'] = response_prices
@@ -91,14 +92,11 @@ def top_stocks(request, filter='', timestamp=0, limit='7', t3=False):
             #try to get latest time
             max_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
             if t3 == True:
-                num_days = 3
-                for i in range(3,6):
-                    min_weekday = (max_date - timedelta(days=num_days)).weekday()
-                    if min_weekday == 5 or min_weekday == 6:
-                        num_days = i
-                    else:
-                        break
-                max_date = max_date - timedelta(days=num_days)
+                if max_date.weekday() <= 2:
+                    max_date -= timedelta(days=5)
+                else:
+                    max_date -= timedelta(days=3)
+            print(max_date)
         else:
             max_date = datetime.fromtimestamp(int(timestamp))
         results = DailyPrice.objects.filter(close_date__date=max_date.date()).only('stock','close_date','close_price','oscillate')

@@ -17,6 +17,7 @@ class Stock(models.Model):
     stock_code = models.CharField(max_length=5)
     listed_index = models.ForeignKey(StockIndex, on_delete=models.CASCADE)
     url = models.CharField(max_length=500)
+    company_name = models.CharField(max_length=255)
 
 class DailyPrice(models.Model):
     "Daily price containing all information"
@@ -138,6 +139,10 @@ class DailyPrice(models.Model):
     def close_price_t3(self):
         "Returns close price from T+3"
         t3date = self.close_date + timedelta(days=3)
+        weekday = self.close_date.weekday()
+        if (weekday >= 2):
+            t3date += timedelta(days=2)
+
         queryset = DailyPrice.objects.filter(stock=self.stock, close_date__date__gte=t3date.date()).only('close_price')
         result = queryset.first()
         if result is None:

@@ -98,7 +98,7 @@ export default class StockInfo extends React.Component {
             <Card>
                 <CardHeader
                     title={stock_data.stock_code}
-                    subtitle={stock_data.index}
+                    subtitle={`${stock_data.company_name} - ${stock_data.index}`}
                 />
                 <CardText>
                     <div>

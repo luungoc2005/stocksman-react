@@ -9,6 +9,7 @@ from os.path import join, abspath, dirname
 from uuid import uuid4
 
 from urllib import request
+from bs4 import BeautifulSoup
 import codecs
 import json
 
@@ -19,12 +20,15 @@ def random_file_name(path = '', prefix = ''):
             prefix + str(int(mktime(datetime.utcnow().timetuple()))) + '-' \
                     + str(uuid4()))
 
-def get_latest_weekday():
-    today_date = date.today()
-    weekday = today_date.weekday()
+def get_latest_weekday(date=None):
+    if date == None:
+        find_date = date.today()
+    else:
+        find_date = date
+    weekday = find_date.weekday()
     if weekday >= 5:
-        today_date = today_date - timedelta(days=(6-weekday))
-    return today_date
+        today_date = find_date - timedelta(days=(6-weekday))
+    return find_date
 
 def geturl(url):
     'Get text content from url'
@@ -110,6 +114,22 @@ def import_from_directory(dirname):
                     price_from_json(line_string)
                 except:
                     print('Error at ' + line_string + ' in ' + full_path)
+
+def find_company_names():
+    queryset = Stock.objects.all().only('company_name', 'url', 'stock_code')
+    for item in list(queryset):
+        if (item.company_name == '') and (item.url != ''):
+            try:
+                print('Getting company name for %s' % item.stock_code)
+                content = request.urlopen(item.url)
+                soup = BeautifulSoup(content, 'lxml')
+                item.company_name = soup.find(
+                    'td', {'class':'Finance_CompanyName'}).find(
+                    'h1').find(
+                    text=True, recursive=False).strip()
+                item.save()
+            except:
+                print('Error encountered')
 
 def find_events():
     for price in list(DailyPrice.objects.all()):
