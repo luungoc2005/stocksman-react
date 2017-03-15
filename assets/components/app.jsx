@@ -10,6 +10,7 @@ import SearchBox from './controls/search-box'
 import StockInfo from './controls/stock-info'
 import TopStocks from './controls/top-stocks'
 import PredictTable from './predict-table'
+import StatusTable from './status-table'
 
 class App extends React.Component {
   constructor() {
@@ -50,6 +51,9 @@ class App extends React.Component {
               <PredictTable />
             </div>
           </div>
+        </Tab>
+        <Tab label="Maintenance">
+          <StatusTable />
         </Tab>
       </Tabs>
     );

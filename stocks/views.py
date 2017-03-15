@@ -1,26 +1,26 @@
 from django.http import HttpResponse
 from django.db.models import Max
 
-from .models import StockIndex, Stock, DailyPrice
-from .utils import normalize_string, get_latest_weekday
+from .models import StockIndex, Stock, DailyPrice, LearnModel
+from .utils import normalize_string, get_latest_weekday, date_to_int
 
 from datetime import datetime, timedelta
-from time import mktime
 
-from .learn import predict_stock, predict_all
+from .learn import predict_stock, predict_all, create_learn_model
+from .update import update_all
 
 import json
 
 def JsonResponse(data):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
-def JsonSuccess(message):
+def JsonSuccess(message=''):
     response_data = {}
     response_data['success'] = True
     response_data['message'] = message
     return HttpResponse(json.dumps(response_data), content_type='application/json', status=200)
 
-def JsonError(message):
+def JsonError(message=''):
     response_data = {}
     response_data['success'] = False
     response_data['message'] = message
@@ -50,7 +50,7 @@ def get_stock(request, stock_code):
 
         for price in prices:
             entry = {}
-            entry['close_date'] = int(mktime(price.close_date.timetuple())*1000)
+            entry['close_date'] = date_to_int(price.close_date)
             entry['close_price'] = price.close_price
             # entry['close_price_t3'] = price.close_price_t3 # for testing T+3
             entry['oscillate'] = round(price.oscillate * 100, 2)
@@ -58,6 +58,8 @@ def get_stock(request, stock_code):
             # entry['short_ma'] = price.short_moving_average
             # entry['long_ma'] = price.long_moving_average
             # entry['short_exp_ma'] = price.short_exp_moving_average
+            # entry['std_dev'] = price.volatility
+            # entry['industry_avg'] = price.industry_oscillate_percent
             response_prices.append(entry)
 
         response_data['prices'] = response_prices
@@ -96,7 +98,6 @@ def top_stocks(request, filter='', timestamp=0, limit='7', t3=False):
                     max_date -= timedelta(days=5)
                 else:
                     max_date -= timedelta(days=3)
-            print(max_date)
         else:
             max_date = datetime.fromtimestamp(int(timestamp))
         results = DailyPrice.objects.filter(close_date__date=max_date.date()).only('stock','close_date','close_price','oscillate')
@@ -118,7 +119,7 @@ def top_stocks(request, filter='', timestamp=0, limit='7', t3=False):
             response_item['stock_code'] = response_stock.stock_code
             response_item['url'] = response_stock.url
             response_item['index_code'] = response_stock.listed_index.index_code
-            response_item['close_date'] = int(mktime(result.close_date.timetuple())*1000)
+            response_item['close_date'] = date_to_int(result.close_date)
 
             if t3 == True:
                 response_item['close_price'] = result.close_price_t3
@@ -165,4 +166,29 @@ def project_all(request, timestamp=0):
         response.append(response_data)
 
     return JsonResponse(response)
-    
+
+def get_update_status(request):
+    response = {}
+    #try to get latest time
+    data_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
+
+    clf_model = LearnModel.objects.filter(model_type=0).only('date', 'accuracy').latest('date')
+    rg_model = LearnModel.objects.filter(model_type=1).only('date', 'accuracy').latest('date')
+
+    clf_date = clf_model.date
+    rg_date = rg_model.date
+
+    response['data_date'] = date_to_int(data_date)
+    response['clf_date'] = date_to_int(clf_date)
+    response['rg_date'] = date_to_int(rg_date)
+    response['clf_accuracy'] = float(clf_model.accuracy)
+    response['rg_accuracy'] = float(rg_model.accuracy)
+    return JsonResponse(response)
+
+def update_data(request):
+    if request.method == 'POST':
+        update_all()
+        create_learn_model()
+        return JsonSuccess()
+    else:
+        return JsonError('Invalid request')

@@ -29,7 +29,8 @@ def get_input_array(price):
     ret_list.extend([float(o == price.weekday) for o in range(0,4)]) # weekday
     ret_list.extend([price.variation, price.oscillate_percent, price.is_event])
     ret_list.extend([price.short_moving_average, price.long_moving_average,
-                    price.short_exp_moving_average, price.long_exp_moving_average])
+                    price.short_exp_moving_average, price.long_exp_moving_average,
+                    price.volatility, price.industry_oscillate_percent])
     return ret_list
 
 def get_output_class(price):

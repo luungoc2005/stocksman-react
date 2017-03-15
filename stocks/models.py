@@ -7,6 +7,8 @@ from datetime import datetime, date, timedelta
 from statistics import mean
 from math import isnan
 
+import numpy
+
 # Create your models here.
 class StockIndex(models.Model):
     "Object containing all stocks listed on an index"
@@ -18,6 +20,7 @@ class Stock(models.Model):
     listed_index = models.ForeignKey(StockIndex, on_delete=models.CASCADE)
     url = models.CharField(max_length=500)
     company_name = models.CharField(max_length=255)
+    industry = models.IntegerField(default=0)
 
 class DailyPrice(models.Model):
     "Daily price containing all information"
@@ -118,6 +121,19 @@ class DailyPrice(models.Model):
             for idx, value in enumerate(prices, start=1):
                 ema += (float(value) - ema) * multiplier
             return ema
+
+    @cached_property
+    def volatility(self):
+        AVERAGE_LIMIT=100 #Std.Dev for 100 days
+        queryset = DailyPrice.objects.filter(stock=self.stock).order_by('close_date').only('close_price')[:AVERAGE_LIMIT]
+        prices = [float(o.close_price) for o in list(queryset) if o.close_price > 0]
+        data = numpy.array(prices, dtype='f8')
+        return numpy.std(data, ddof=1)
+
+    @cached_property
+    def industry_oscillate_percent(self):
+        queryset = DailyPrice.objects.filter(stock__industry=self.stock.industry, close_date__date=self.close_date.date()).only('oscillate', 'close_price')
+        return mean([float(o.oscillate_percent) for o in list(queryset)])
 
     # Previous
     @cached_property

@@ -17,5 +17,8 @@ urlpatterns = [
         views.top_stocks, {'t3': True}),
     # predictions
     url(r'^project_stock/(?P<stock_code>[a-zA-Z0-9]+)/?$', views.project_stock),
-    url(r'^^project_all/(?:(?P<timestamp>\d+))?/?$', views.project_all),
+    url(r'^project_all/(?:(?P<timestamp>\d+))?/?$', views.project_all),
+    # status/maintenance
+    url(r'^status/?$', views.get_update_status),
+    url(r'^update_all/?$', views.update_data),
 ]
