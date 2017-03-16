@@ -14,6 +14,16 @@ module.exports = {
 
   plugins: [
     new BundleTracker({filename: './webpack-stats.json'}),
+    new webpack.DefinePlugin({
+      'process.env': {
+          'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+          screw_ie8: true
+      }
+    }),
   ],
 
   module: {
@@ -26,7 +36,7 @@ module.exports = {
               ['es2015', { "modules": false }],
               'react'
               ],
-            plugins: []
+            plugins: ['transform-react-inline-elements', 'transform-react-constant-elements']
           }
       },
       {
