@@ -1,19 +1,35 @@
 from .models import Stock, DailyPrice
+from django.db.models import Max
 
 from datetime import datetime, date, timedelta
 from pytz import timezone
+from time import mktime
+
 from os import listdir
-from os.path import join
+from os.path import join, abspath, dirname
+from uuid import uuid4
+
 from urllib import request
+from bs4 import BeautifulSoup
 import codecs
 import json
 
-def get_latest_weekday():
-    today_date = date.today()
-    weekday = today_date.weekday()
+APP_ROOT = dirname(abspath(__file__))
+
+def random_file_name(path = '', prefix = ''):
+    return join(APP_ROOT, path, 
+            prefix + str(int(mktime(datetime.utcnow().timetuple()))) + '-' \
+                    + str(uuid4()))
+
+def get_latest_weekday(input_date=None):
+    if input_date == None:
+        find_date = date.today()
+    else:
+        find_date = input_date
+    weekday = find_date.weekday()
     if weekday >= 5:
-        today_date = today_date - timedelta(days=(6-weekday))
-    return today_date
+        today_date = find_date - timedelta(days=(6-weekday))
+    return find_date
 
 def geturl(url):
     'Get text content from url'
@@ -99,3 +115,63 @@ def import_from_directory(dirname):
                     price_from_json(line_string)
                 except:
                     print('Error at ' + line_string + ' in ' + full_path)
+
+def find_company_names():
+    queryset = Stock.objects.all().only('company_name', 'url', 'stock_code')
+    for item in list(queryset):
+        if (item.company_name == '') and (item.url != ''):
+            try:
+                print('Getting company name for %s' % item.stock_code)
+                content = request.urlopen(item.url)
+                soup = BeautifulSoup(content, 'lxml')
+                item.company_name = soup.find(
+                    'td', {'class':'Finance_CompanyName'}).find(
+                    'h1').find(
+                    text=True, recursive=False).strip()
+                item.save()
+            except:
+                print('Error encountered')
+
+def find_industry():
+    queryset = Stock.objects.all().only('stock_code', 'industry')
+    count = Stock.objects.all().aggregate(Max('industry'))['industry__max'] + 1
+    print('Max_industry: %s' % str(count))
+    for item in list(queryset):
+        if item.industry == 0:
+            print('Getting industry for %s' % item.stock_code)
+
+            response = request.urlopen(r'http://finance.vietstock.vn/Controls/TradingResult/Company_InSameIndustry_FilterProcess.ashx?Goals=all&Condition=than&val1=0&val2=100&Goals2=Price&Condition2=than&val21=0&val22=100&Goals3=Price&Condition3=than&val31=0&val32=100&countF=1&scode=' + item.stock_code + r'&fdate=03%2F15%2F17&catID=-1&sort=MktCap&dir=desc&page=1&psize=10&typeDo=filter')
+            data = json.loads(response.read(), encoding='utf-8')
+            industry_list = list(data['data'][0]['InSameIndustry'])
+            print('Found %s stocks in the same industry' % str(len(industry_list)))
+            set_industry = False
+            for tag in industry_list:
+                code=tag['StockCode']
+                # print('Found stock in same industry: %s' % code)
+                try:
+                    item2 = Stock.objects.get(stock_code=normalize_string(code))
+                except:
+                    item2 = None
+                if item2 != None:
+                    if item2.industry == 0:
+                        print('\tSetting industry for %s' % item2.stock_code)
+                        item2.industry = count
+                        item.industry = count
+                        item.save()
+                        item2.save()
+                        set_industry = True
+                    elif item2.industry != item.industry:
+                        print('\tSetting back industry for %s' % item.stock_code)
+                        item.industry = item2.industry
+                        item.save()
+            if set_industry == True:
+                count += 1
+
+def find_events():
+    for price in list(DailyPrice.objects.all()):
+        if price.is_event:
+            print('Event: ' + price.stock.stock_code + ' on ' + str(price.close_date.date()) + ': ' \
+            + str(price.previous_close_price) + ' -> ' + str(price.close_price))
+
+def date_to_int(date):
+    return int(mktime(date.timetuple())*1000)

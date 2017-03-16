@@ -17,6 +17,7 @@ import {deepPurple100, deepPurple500, deepPurple700} from 'material-ui/styles/co
 import Navbar from './components/navbar';
 import Footer from './components/footer';
 import App from './components/app';
+import Initializer from './components/initializer'
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
 // Needed for onTouchTap
@@ -37,6 +38,7 @@ const muiTheme = getMuiTheme({
 
 ReactDOM.render(
   <div className={styles.wrap}>
+    <Initializer />
     <MuiThemeProvider muiTheme={muiTheme}>
       <Navbar />
     </MuiThemeProvider>

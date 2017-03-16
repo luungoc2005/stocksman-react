@@ -24,39 +24,42 @@ export default class TopStocks extends React.Component {
         }
     }
 
-    setFilter(indexCode) {
+    setFilter(indexCode, t3) {
         if (indexCode === null || indexCode === undefined) indexCode = this.state.index_code;
         
         let url = ''
-        if (this.state.t3 === true) {
+        t3 = (t3 === null || t3 === undefined)? this.state.t3: t3
+
+        if (t3 === true) {
             url = TOPSTOCKS_T3_URL.replace("{1}", indexCode);
         }
         else
         {
             url = TOPSTOCKS_URL.replace("{1}", indexCode);
         }
+
         $.getJSON(url, (response) => {
-            let newState = this.state;
-            newState.index_code = indexCode;
-            newState.data = response;
-            this.setState(newState);
+            this.setState({
+                index_code: indexCode,
+                data: response
+            });
         });
     }
 
     componentWillMount() {
         $.getJSON(GETINDICES_URL, (response) => {
-            let newState = this.state;
-            newState.filters = response;
-            this.setState(newState);
+            this.setState({
+                filters: response
+            });
         });
         this.setFilter();
     }
 
     handleT3Toggle(event, isInputChecked) {
-        let newState = this.state;
-        newState.t3 = isInputChecked;
-        this.setState(newState);
-        this.setFilter();
+        this.setState({
+            t3: isInputChecked
+        });
+        this.setFilter('', isInputChecked)
     }
 
     render() {

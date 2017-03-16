@@ -1,4 +1,4 @@
-from .models import StockIndex, Stock, DailyPrice
+from .models import StockIndex, Stock, DailyPrice, Scaler
 from .utils import normalize_string
 
 from random import shuffle
@@ -7,79 +7,70 @@ from operator import itemgetter
 
 from django.db.models import Max
 from django.forms.models import model_to_dict
+from .utils import random_file_name
 
 from sklearn import preprocessing, model_selection, neural_network
 import numpy
+import pickle
 
 MIN_DAYS = 60
 
 def get_input_array(price):
     ret_list = [float(o) for o in list(model_to_dict(price,
-        fields=['close_price', 'open_price', 'avg_price', 'oscillate',
+        fields=['close_price', 'oscillate',
                 'dividend', 'eps', 'beta']).values())]
                 # 'bvps', 'capital_level', 'curr_room', 'klcplh', 'klcpny',
                 # 'total_vol', 'trading_vol',
                 # 'dec_pb', 'dec_pe', 'fw_pe'
                 # 'buy_redundancy', 'sell_redundancy',
+        # Changelog: 1. Added Trading_vol, Total_vol: Accuracy 0.6 0.19
+        # Changelog: Removed Trading_vol, Total_vol, open_price, avg_price
+
     ret_list.extend([float(o == price.weekday) for o in range(0,4)]) # weekday
-    ret_list.extend([price.variation, price.oscillate_percent, price.moving_average])
+    ret_list.extend([price.variation, price.oscillate_percent, price.is_event])
+    ret_list.extend([price.short_moving_average, price.long_moving_average,
+                    price.short_exp_moving_average, price.long_exp_moving_average,
+                    price.volatility, price.industry_oscillate_percent])
     return ret_list
 
-def get_output_value(price):
+def get_output_class(price):
     return float(price.oscillate_t3 > 0)
 
-def get_eval_data():
-    global X_train
-    global X_test
-    global y_train
-    global y_test
+def get_output_value(price):
+    return float(price.oscillate_percent_t3)
 
+def get_eval_data():
     lookup_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max'] - timedelta(days=MIN_DAYS)
     results = list(DailyPrice.objects.filter(close_date__gte=lookup_date).defer('close_date', 'stock', 'raw_json'))
-    results = [o for o in results if o != None and o.close_price_t3 > 0 and o.moving_average > 0]
+    results = [o for o in results if o != None and o.close_price_t3 > 0 and o.close_price > 0]
     print('Length: ' + str(len(results)))
     # shuffle(results)
 
     inputs = numpy.array([get_input_array(o) for o in results], dtype='f8')
-    outputs = numpy.array([get_output_value(o) for o in results], dtype='f8')
+    outputs_cls = numpy.array([get_output_class(o) for o in results], dtype='f8')    
+    outputs_reg = numpy.array([get_output_value(o) for o in results], dtype='f8')
 
-    inputs_scaled = preprocessing.scale(inputs)
+    scaler = preprocessing.StandardScaler(
+        copy=True, with_mean=True, with_std=True).fit(inputs)
+
+    inputs_scaled = scaler.transform(inputs)
+
+    scale_file = random_file_name('scalers', 'scaler_')
+    pickle.dump(scaler, open(scale_file, 'wb'))
+
+    scale_model = Scaler()
+    scale_model.date = datetime.utcnow()
+    scale_model.data = scale_file
+    scale_model.save()
+
     # outputs_scaled = preprocessing.scale(outputs)
 
     print(inputs_scaled)
     # print(outputs_scaled)
-    print(outputs)
+    print(outputs_cls)
+    print(outputs_reg)
 
-    return model_selection.train_test_split(inputs_scaled, outputs, test_size=0.2)
-    # clf=neural_network.MLPRegressor(activation='relu', alpha=1e-05, batch_size='auto',
-    #                                 beta_1=0.9, beta_2=0.999, early_stopping=True,
-    #                                 epsilon=1e-08, hidden_layer_sizes=(100, 50), learning_rate='adaptive',
-    #                                 learning_rate_init=0.001, max_iter=50000, momentum=0.9,
-    #                                 nesterovs_momentum=True, power_t=0.5, random_state=None, shuffle=True,
-    #                                 solver='adam', tol=0.000001, validation_fraction=0.1, verbose=True,
-    #                                 warm_start=False) # Best: Accuracy: 0.0768774481639
-    # clf=neighbors.KNeighborsRegressor(n_neighbors=10, weights='distance', algorithm='auto',
-    #                                     leaf_size=30, p=2, metric='minkowski',
-    #                                     metric_params=None, n_jobs=1)
-    # clf=tree.DecisionTreeRegressor(criterion='mse', splitter='best', max_depth=None,
-    #                                 min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0,
-    #                                 max_features=None, random_state=None, max_leaf_nodes=None,
-    #                                 min_impurity_split=1e-07, presort=False)
-    # clf=kernel_ridge.KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='linear',
-    #         kernel_params=None)
+    cls_data = model_selection.train_test_split(inputs_scaled, outputs_cls, test_size=0.2)
+    reg_data = model_selection.train_test_split(inputs_scaled, outputs_reg, test_size=0.2)
 
-    # clf_array = []
-    # accuracy_array = []
-    # for i in range(3,25):
-    #     clf=neighbors.KNeighborsRegressor(n_neighbors=i, weights='distance', algorithm='auto',
-    #                                 leaf_size=30, p=2, metric='minkowski',
-    #                                 metric_params=None, n_jobs=1)
-    #     clf.fit(X_train, y_train)
-    #     accuracy = clf.score(X_test, y_test)
-    #     print(str(i) + ' neighbors - Accuracy: ' + str(accuracy))
-
-    #     clf_array.append(clf)
-    #     accuracy_array.append(abs(accuracy))
-
-    # index, value = max(enumerate(accuracy_array), key=itemgetter(1))
-    # print('Best: ' + str(index + 3) + ' - Accuracy: ' + str(value))
+    return scale_model, [cls_data, reg_data]

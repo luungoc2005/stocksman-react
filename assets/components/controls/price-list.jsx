@@ -21,7 +21,7 @@ export default function PriceList(props) {
     }
     
     let history_list = [];
-    let data_list = props.data.slice();
+    let data_list = (props.data !== undefined) ? props.data.slice() : [];
 
     for (let i = 0; i < data_list.length; i++) {
         let price = data_list[i];

@@ -4,9 +4,13 @@ import toast from '../css/toast.css'; // Grids
 import styles from '../css/style.css';
 
 import Paper from 'material-ui/Paper';
+import {Tabs, Tab} from 'material-ui/Tabs';
+
 import SearchBox from './controls/search-box'
 import StockInfo from './controls/stock-info'
 import TopStocks from './controls/top-stocks'
+import PredictTable from './predict-table'
+import StatusTable from './status-table'
 
 class App extends React.Component {
   constructor() {
@@ -25,17 +29,33 @@ class App extends React.Component {
   render() {
     let text = this.state.selected_stock;
     return (
-      <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
-        <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
-          <SearchBox onUpdateInput={(item) => this.onSearchInput(item.text)} />
-          <StockInfo stockCode={text} />
-        </div>
-        <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
-          <TopStocks
-              onItemSelected={(item) => this.onSearchInput(item)}
-          />
-        </div>
-      </div>
+      <Tabs
+        className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}
+      >
+        <Tab label="Market Status">          
+          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
+            <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
+              <SearchBox onUpdateInput={(item) => this.onSearchInput(item.text)} />
+              <StockInfo stockCode={text} />
+            </div>
+            <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
+              <TopStocks
+                  onItemSelected={(item) => this.onSearchInput(item)}
+              />
+            </div>
+          </div>
+        </Tab>
+        <Tab label="Predictions">          
+          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
+            <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
+              <PredictTable />
+            </div>
+          </div>
+        </Tab>
+        <Tab label="Maintenance">
+          <StatusTable />
+        </Tab>
+      </Tabs>
     );
   }
 }
