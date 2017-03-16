@@ -52,9 +52,9 @@ def get_eval_data():
 
     scaler = preprocessing.StandardScaler(
         copy=True, with_mean=True, with_std=True).fit(inputs)
-    
+
     inputs_scaled = scaler.transform(inputs)
-    
+
     scale_file = random_file_name('scalers', 'scaler_')
     pickle.dump(scaler, open(scale_file, 'wb'))
 
