@@ -26,10 +26,12 @@
     "webpack-bundle-tracker": "^0.2.0"
   },
   "dependencies": {
+    "fastclick": "^1.0.6",
     "jquery": "^3.1.1",
     "material-ui": "^0.17.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
+    "react-lite": "^0.15.33",
     "react-tap-event-plugin": "^2.0.1"
   }
 }

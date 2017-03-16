@@ -36,7 +36,7 @@ module.exports = {
               ['es2015', { "modules": false }],
               'react'
               ],
-            plugins: ['transform-react-inline-elements', 'transform-react-constant-elements']
+            plugins: ['transform-react-constant-elements']
           }
       },
       {
@@ -61,6 +61,11 @@ module.exports = {
 
   resolve: {
     modules: ['node_modules', 'bower_components'],
-    extensions: ['.jsx', '.css', '.json', '.js']
+    extensions: ['.jsx', '.css', '.json', '.js'],
+    alias: {
+      'react': 'react-lite',
+      'react-dom': 'react-lite',
+      'react-tap-event-plugin': 'react-lite/lib/react-tap-event-plugin',
+    },
   },
 }
