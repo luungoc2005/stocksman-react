@@ -9,6 +9,7 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 import SearchBox from './controls/search-box'
 import StockInfo from './controls/stock-info'
 import TopStocks from './controls/top-stocks'
+import EventsList from './controls/events-list'
 import PredictTable from './predict-table'
 import StatusTable from './status-table'
 
@@ -41,6 +42,9 @@ class App extends React.Component {
             <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
               <TopStocks
                   onItemSelected={(item) => this.onSearchInput(item)}
+              />
+              <EventsList
+                onItemSelected={(item) => this.onSearchInput(item)}
               />
             </div>
           </div>
