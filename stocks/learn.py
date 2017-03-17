@@ -150,7 +150,20 @@ def create_learn_model():
     new_rg.scaler = scaler
     new_rg.save()
 
+# Caching of scaler, classification and regression models
+clf_scaler = None
+clf = None
+reg_scaler = None
+reg = None
+clf_scaler_file = ''
+reg_scaler_file = ''
+clf_file = ''
+reg_file = ''
+
 def get_learn_model(timestamp=0):
+    global clf_scaler, clf, reg_scaler, reg, model_date
+    global clf_scaler_file, reg_scaler_file, clf_file, reg_file
+
     if timestamp > 0:
         lookup_date = datetime.fromtimestamp(int(timestamp))
         clf_model = LearnModel.objects.filter(model_type=0, date__lte=lookup_date).earliest('date')
@@ -158,11 +171,22 @@ def get_learn_model(timestamp=0):
     else:
         clf_model = LearnModel.objects.filter(model_type=0).latest('date')
         rg_model = LearnModel.objects.filter(model_type=1).latest('date')
+    
+    if (clf_file != clf_model.data or clf == None):
+        clf_file = clf_model.data
+        clf = pickle.load(open(clf_model.data, 'rb'))
 
-    clf = pickle.load(open(clf_model.data, 'rb'))
-    reg = pickle.load(open(rg_model.data, 'rb'))
-    clf_scaler = pickle.load(open(clf_model.scaler.data, 'rb'))
-    reg_scaler = pickle.load(open(rg_model.scaler.data, 'rb'))
+    if (reg_file != rg_model.data or reg == None):
+        reg_file = rg_model.data
+        reg = pickle.load(open(rg_model.data, 'rb'))
+    
+    if (clf_scaler_file != clf_model.scaler.data or clf_scaler == None):
+        clf_scaler_file = clf_model.scaler.data
+        clf_scaler = pickle.load(open(clf_model.scaler.data, 'rb'))
+    
+    if (reg_scaler_file != rg_model.scaler.data or reg_scaler == None):
+        reg_scaler_file = rg_model.scaler.data
+        reg_scaler = pickle.load(open(rg_model.scaler.data, 'rb'))
 
     return clf_scaler, clf, reg_scaler, reg
 
