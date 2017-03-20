@@ -44,20 +44,25 @@ class App extends React.Component {
                   onItemSelected={(item) => this.onSearchInput(item)}
               />
               <EventsList
+                className={styles.marginTop20}
                 onItemSelected={(item) => this.onSearchInput(item)}
               />
             </div>
           </div>
         </Tab>
         <Tab label="Predictions">          
-          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
+          <div className={[toast.grid, styles.marginTop20].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <PredictTable />
             </div>
           </div>
         </Tab>
-        <Tab label="Maintenance">
-          <StatusTable />
+        <Tab label="Maintenance">          
+          <div className={[toast.grid, styles.marginTop20].join(' ')}>
+            <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
+              <StatusTable />
+            </div>
+          </div>
         </Tab>
       </Tabs>
     );
