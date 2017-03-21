@@ -11,7 +11,7 @@ from .utils import random_file_name
 
 from sklearn import preprocessing, model_selection, neural_network
 import numpy
-import pickle
+import joblib
 
 MIN_DAYS = 60
 
@@ -47,7 +47,7 @@ def get_eval_data():
     # shuffle(results)
 
     inputs = numpy.array([get_input_array(o) for o in results], dtype='f8')
-    outputs_cls = numpy.array([get_output_class(o) for o in results], dtype='f8')    
+    outputs_cls = numpy.array([get_output_class(o) for o in results], dtype='f8')
     outputs_reg = numpy.array([get_output_value(o) for o in results], dtype='f8')
 
     scaler = preprocessing.StandardScaler(
@@ -56,7 +56,7 @@ def get_eval_data():
     inputs_scaled = scaler.transform(inputs)
 
     scale_file = random_file_name('scalers', 'scaler_')
-    pickle.dump(scaler, open(scale_file, 'wb'))
+    joblib.dump(scaler, scale_file)
 
     scale_model = Scaler()
     scale_model.date = datetime.utcnow()

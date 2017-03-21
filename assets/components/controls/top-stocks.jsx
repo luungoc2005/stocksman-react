@@ -21,7 +21,12 @@ export default class TopStocks extends React.Component {
             t3: false,
             data: [],
             filters: [],
+            expanded: false,
         }
+    }
+
+    handleExpandChange(expanded) {
+        this.setState({expanded: expanded});
     }
 
     setFilter(indexCode, t3) {
@@ -77,15 +82,15 @@ export default class TopStocks extends React.Component {
         }
 
         return (
-            <Card>
-                <CardHeader title="Top Performers" />
-                <CardText>                    
+            <Card expanded={this.state.expanded} onExpandChange={(expanded) => this.handleExpandChange(expanded)}>
+                <CardHeader title="Top Performers" actAsExpander={true} showExpandableButton={true} />
+                <CardText expandable={true}>
                     <Toggle
                         label="Enable T+3"
                         onToggle={(e,c) => this.handleT3Toggle(e,c)}
                     />
                 </CardText>
-                <CardText>
+                <CardText expandable={true}>
                     <PriceList 
                         data={this.state.data} 
                         showCode={true} 
@@ -94,7 +99,7 @@ export default class TopStocks extends React.Component {
                                         this.props.onItemSelected(item):undefined}
                     />
                 </CardText>
-                <CardActions>
+                <CardActions expandable={true}>
                     <DropDownMenu value={this.state.index_code} onChange={(event, index, value) => this.setFilter(value)}>
                         {filterMenu}
                     </DropDownMenu>
