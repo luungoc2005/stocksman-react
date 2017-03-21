@@ -9,7 +9,7 @@ from datetime import datetime
 from stocks.models import LearnModel, DailyPrice, Stock, Calibrator
 
 import numpy
-import pickle
+import joblib
 
 CLASSIFIERS = [
     neural_network.MLPClassifier(hidden_layer_sizes=(100,), activation='sigmoid', solver='sgd', alpha=0.0001, batch_size='auto', learning_rate='adaptive', learning_rate_init=0.001, power_t=0.5, max_iter=50000, shuffle=True, random_state=None, tol=0.000001, verbose=False, warm_start=False, momentum=0.5, nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08), #1
@@ -115,7 +115,7 @@ def create_learn_model(save_model=True):
     # Save the classifier
     if (save_model):
         cl_file = random_file_name('models', 'cl_')
-        pickle.dump(clf_array[index_clf], open(cl_file, 'wb'))
+        joblib.dump(clf_array[index_clf], cl_file, 3)
 
         new_clf = LearnModel()
         new_clf.accuracy = value_clf
@@ -160,8 +160,8 @@ def create_learn_model(save_model=True):
     if (save_model):
         if pcl_array[index_pcl] != None:
             pcl_file = random_file_name('models', 'pcl_')
-            pickle.dump(pcl_array[index_pcl], open(pcl_file, 'wb'))
-        
+            joblib.dump(pcl_array[index_pcl], pcl_file, 3)
+
             new_pcl = Calibrator()
             new_pcl.loss = value_pcl
             new_pcl.data = pcl_file
@@ -198,7 +198,7 @@ def create_learn_model(save_model=True):
     # Save the regressor
     if (save_model):
         rg_file = random_file_name('models', 'rg_')
-        pickle.dump(rg_array[index_rg], open(rg_file, 'wb'))
+        joblib.dump(rg_array[index_rg], rg_file, 3)
 
         new_rg = LearnModel()
         new_rg.accuracy = value_rg
@@ -234,22 +234,22 @@ def get_learn_model(timestamp=0):
     
     if (clf_file != clf_model.data or clf == None):
         clf_file = clf_model.data
-        clf = pickle.load(open(clf_model.data, 'rb'))
+        clf = joblib.load(clf_model.data)
         if (clf_model.calibrator != None or pcl_file != clf_model.calibrator.data):
             pcl_file = clf_model.calibrator.data
-            pcl = pickle.load(open(clf_model.calibrator.data, 'rb'))
+            pcl = joblib.load(clf_model.calibrator.data)
 
     if (reg_file != rg_model.data or reg == None):
         reg_file = rg_model.data
-        reg = pickle.load(open(rg_model.data, 'rb'))
+        reg = joblib.load(rg_model.data)
     
     if (clf_scaler_file != clf_model.scaler.data or clf_scaler == None):
         clf_scaler_file = clf_model.scaler.data
-        clf_scaler = pickle.load(open(clf_model.scaler.data, 'rb'))
+        clf_scaler = joblib.load(clf_model.scaler.data)
     
     if (reg_scaler_file != rg_model.scaler.data or reg_scaler == None):
         reg_scaler_file = rg_model.scaler.data
-        reg_scaler = pickle.load(open(rg_model.scaler.data, 'rb'))
+        reg_scaler = joblib.load(rg_model.scaler.data)
 
     return clf_scaler, clf, pcl, reg_scaler, reg
 
