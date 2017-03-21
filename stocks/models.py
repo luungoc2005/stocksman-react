@@ -190,8 +190,14 @@ class Scaler(models.Model):
     date = models.DateTimeField()
     data = models.CharField(max_length=255)
 
+class Calibrator(models.Model):
+    date = models.DateTimeField()
+    data = models.CharField(max_length=255)
+    loss = models.DecimalField(max_digits=10, decimal_places=8, default=1)
+
 class LearnModel(models.Model):
     scaler = models.ForeignKey(Scaler, on_delete=models.CASCADE)
+    calibrator = models.ForeignKey(Calibrator, on_delete=models.CASCADE, null=True)
     model_type = models.IntegerField(default=0)
     data = models.CharField(max_length=255)
     date = models.DateTimeField()
