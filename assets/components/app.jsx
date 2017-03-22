@@ -31,7 +31,7 @@ class App extends React.Component {
     let text = this.state.selected_stock;
     return (
       <Tabs
-        className={[toast.grid, styles.marginTop20].join(' ')}
+        className={[toast.grid, styles.marginTop10].join(' ')}
       >
         <Tab label="Market Status">          
           <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
@@ -45,7 +45,7 @@ class App extends React.Component {
                   onItemSelected={(item) => this.onSearchInput(item)}
                 />
               </div>
-              <div className={styles.marginTop20}>
+              <div className={styles.marginTop10}>
                 <EventsList                  
                   onItemSelected={(item) => this.onSearchInput(item)}
                 />
@@ -54,14 +54,14 @@ class App extends React.Component {
           </div>
         </Tab>
         <Tab label="Predictions">          
-          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
+          <div className={[styles.mainContent, toast.grid, styles.marginTop10].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <PredictTable />
             </div>
           </div>
         </Tab>
         <Tab label="Maintenance">
-          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
+          <div className={[styles.mainContent, toast.grid, styles.marginTop10].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <StatusTable />
             </div>
