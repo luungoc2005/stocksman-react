@@ -31,7 +31,7 @@ class App extends React.Component {
     let text = this.state.selected_stock;
     return (
       <Tabs
-        className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}
+        className={[toast.grid, styles.marginTop20].join(' ')}
       >
         <Tab label="Market Status">          
           <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
@@ -40,25 +40,28 @@ class App extends React.Component {
               <StockInfo stockCode={text} />
             </div>
             <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
-              <TopStocks
+              <div>
+                <TopStocks
                   onItemSelected={(item) => this.onSearchInput(item)}
-              />
-              <EventsList
-                className={styles.marginTop20}
-                onItemSelected={(item) => this.onSearchInput(item)}
-              />
+                />
+              </div>
+              <div className={styles.marginTop20}>
+                <EventsList                  
+                  onItemSelected={(item) => this.onSearchInput(item)}
+                />
+              </div>
             </div>
           </div>
         </Tab>
         <Tab label="Predictions">          
-          <div className={[toast.grid, styles.marginTop20].join(' ')}>
+          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <PredictTable />
             </div>
           </div>
         </Tab>
-        <Tab label="Maintenance">          
-          <div className={[toast.grid, styles.marginTop20].join(' ')}>
+        <Tab label="Maintenance">
+          <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <StatusTable />
             </div>
