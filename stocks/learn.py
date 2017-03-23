@@ -2,12 +2,14 @@ from .learndata import *
 from .utils import random_file_name
 
 from sklearn import preprocessing, neural_network, neighbors, ensemble, svm, discriminant_analysis, kernel_ridge, tree, linear_model
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import brier_score_loss
 from datetime import datetime
 
-from stocks.models import LearnModel, DailyPrice, Stock
+from stocks.models import LearnModel, DailyPrice, Stock, Calibrator
 
 import numpy
-import pickle
+import joblib
 
 CLASSIFIERS = [
     neural_network.MLPClassifier(hidden_layer_sizes=(100,), activation='sigmoid', solver='sgd', alpha=0.0001, batch_size='auto', learning_rate='adaptive', learning_rate_init=0.001, power_t=0.5, max_iter=50000, shuffle=True, random_state=None, tol=0.000001, verbose=False, warm_start=False, momentum=0.5, nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08), #1
@@ -31,6 +33,14 @@ CLASSIFIERS = [
     ensemble.GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimators=100, subsample=1.0, criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_split=1e-07, init=None, random_state=None, max_features=None, verbose=0, max_leaf_nodes=None, warm_start=False, presort='auto'), #7
 
     discriminant_analysis.QuadraticDiscriminantAnalysis(priors=None, reg_param=0.0, store_covariances=False, tol=0.000001) #8
+]
+
+CALIBRATORS = [
+    None,
+
+    'sigmoid',
+
+    'isotonic'
 ]
 
 REGRESSORS = [
@@ -75,7 +85,7 @@ REGRESSORS = [
     C=1.0, epsilon=0.1, shrinking=True, cache_size=200, verbose=False, max_iter=-1), #8
 ]
 
-def create_learn_model():
+def create_learn_model(save_model=True):
     scaler, input_data = get_eval_data()
 
     clf_array = []
@@ -103,16 +113,63 @@ def create_learn_model():
     print('Best classification model: ' + str(index_clf) + ' - Accuracy: ' + str(value_clf))
 
     # Save the classifier
-    cl_file = random_file_name('models', 'cl_')
-    pickle.dump(clf_array[index_clf], open(cl_file, 'wb'))
+    if (save_model):
+        cl_file = random_file_name('models', 'cl_')
+        joblib.dump(clf_array[index_clf], cl_file, 3)
 
-    new_clf = LearnModel()
-    new_clf.accuracy = value_clf
-    new_clf.data = cl_file
-    new_clf.date = datetime.utcnow()
-    new_clf.model_type = 0 # classifier
-    new_clf.scaler = scaler
-    new_clf.save()
+        new_clf = LearnModel()
+        new_clf.accuracy = value_clf
+        new_clf.data = cl_file
+        new_clf.date = datetime.utcnow()
+        new_clf.model_type = 0 # classifier
+        new_clf.scaler = scaler
+        new_clf.save()
+
+    # Probability Calibrator
+    pcl_array = []
+    pcl_loss_array = []
+
+    for pcl in CALIBRATORS:
+        # try:
+        error=False
+        if pcl != None:
+            pcl_object = CalibratedClassifierCV(base_estimator=clf_array[index_clf], method=pcl, cv=3)
+            pcl_object.fit(X_train, y_train)
+            pcl_predicted = pcl_object.predict_proba(X_test)[:, 1]
+        else:
+            pcl_object = None
+            pcl_predicted = clf_array[index_clf].predict_proba(X_test)[:, 1]
+        
+        pcl_loss = brier_score_loss(y_test, pcl_predicted, pos_label=1)
+        # except:
+        #     error=True
+        #     raise
+
+        if error == False:
+            print('Loss: ' + str(pcl_loss))
+            pcl_array.append(pcl_object)
+            pcl_loss_array.append(pcl_loss)
+        else:
+            print('Error encountered')
+            pcl_array.append(None)
+            pcl_loss_array.append(1.1)
+        
+    index_pcl, value_pcl = min(enumerate(pcl_loss_array), key=itemgetter(1))
+    print('Best probability calibrator: ' + str(index_pcl) + ' - Loss: ' + str(value_pcl))
+
+    if (save_model):
+        if pcl_array[index_pcl] != None:
+            pcl_file = random_file_name('models', 'pcl_')
+            joblib.dump(pcl_array[index_pcl], pcl_file, 3)
+
+            new_pcl = Calibrator()
+            new_pcl.loss = value_pcl
+            new_pcl.data = pcl_file
+            new_pcl.date = datetime.utcnow()
+            new_pcl.save()
+
+            new_clf.calibrator = new_pcl
+            new_clf.save()
 
     rg_array = []
     rg_accuracy_array = []
@@ -139,18 +196,34 @@ def create_learn_model():
     print('Best regression model: ' + str(index_rg) + ' - Accuracy: ' + str(value_rg))
 
     # Save the regressor
-    rg_file = random_file_name('models', 'rg_')
-    pickle.dump(rg_array[index_rg], open(rg_file, 'wb'))
+    if (save_model):
+        rg_file = random_file_name('models', 'rg_')
+        joblib.dump(rg_array[index_rg], rg_file, 3)
 
-    new_rg = LearnModel()
-    new_rg.accuracy = value_rg
-    new_rg.data = rg_file
-    new_rg.date = datetime.utcnow()
-    new_rg.model_type = 1 # regressor
-    new_rg.scaler = scaler
-    new_rg.save()
+        new_rg = LearnModel()
+        new_rg.accuracy = value_rg
+        new_rg.data = rg_file
+        new_rg.date = datetime.utcnow()
+        new_rg.model_type = 1 # regressor
+        new_rg.scaler = scaler
+        new_rg.save()
+
+# Caching of scaler, classification and regression models
+clf_scaler = None
+clf = None
+pcl = None
+reg_scaler = None
+reg = None
+clf_scaler_file = ''
+reg_scaler_file = ''
+clf_file = ''
+reg_file = ''
+pcl_file = ''
 
 def get_learn_model(timestamp=0):
+    global clf_scaler, clf, pcl, reg_scaler, reg, model_date
+    global clf_scaler_file, pcl_file, reg_scaler_file, clf_file, reg_file
+
     if timestamp > 0:
         lookup_date = datetime.fromtimestamp(int(timestamp))
         clf_model = LearnModel.objects.filter(model_type=0, date__lte=lookup_date).earliest('date')
@@ -158,13 +231,27 @@ def get_learn_model(timestamp=0):
     else:
         clf_model = LearnModel.objects.filter(model_type=0).latest('date')
         rg_model = LearnModel.objects.filter(model_type=1).latest('date')
+    
+    if (clf_file != clf_model.data or clf == None):
+        clf_file = clf_model.data
+        clf = joblib.load(clf_model.data)
+        if (clf_model.calibrator != None or pcl_file != clf_model.calibrator.data):
+            pcl_file = clf_model.calibrator.data
+            pcl = joblib.load(clf_model.calibrator.data)
 
-    clf = pickle.load(open(clf_model.data, 'rb'))
-    reg = pickle.load(open(rg_model.data, 'rb'))
-    clf_scaler = pickle.load(open(clf_model.scaler.data, 'rb'))
-    reg_scaler = pickle.load(open(rg_model.scaler.data, 'rb'))
+    if (reg_file != rg_model.data or reg == None):
+        reg_file = rg_model.data
+        reg = joblib.load(rg_model.data)
+    
+    if (clf_scaler_file != clf_model.scaler.data or clf_scaler == None):
+        clf_scaler_file = clf_model.scaler.data
+        clf_scaler = joblib.load(clf_model.scaler.data)
+    
+    if (reg_scaler_file != rg_model.scaler.data or reg_scaler == None):
+        reg_scaler_file = rg_model.scaler.data
+        reg_scaler = joblib.load(rg_model.scaler.data)
 
-    return clf_scaler, clf, reg_scaler, reg
+    return clf_scaler, clf, pcl, reg_scaler, reg
 
 def predict_stock(code='', timestamp=0):
     queryset = DailyPrice.objects.all()
@@ -179,7 +266,7 @@ def predict_stock(code='', timestamp=0):
     else:
         price = queryset.latest('close_date')
 
-    clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
+    clf_scaler, clf, pcl, reg_scaler, reg = get_learn_model(timestamp)
 
     stock_code = price.stock.stock_code
     current_price = price.close_price
@@ -189,7 +276,11 @@ def predict_stock(code='', timestamp=0):
     clf_input = clf_scaler.transform(input_data)
     reg_input = reg_scaler.transform(input_data)
 
-    predict_chance = clf.predict_proba(clf_input)
+    if (pcl == None):
+        predict_chance = clf.predict_proba(clf_input)
+    else:
+        predict_chance = pcl.predict_proba(clf_input)
+
     predict_oscillate = reg.predict(reg_input)
 
     return stock_code, current_price, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)
@@ -202,7 +293,7 @@ def predict_all(timestamp=0):
         max_date = datetime.fromtimestamp(int(timestamp))
     results = list(DailyPrice.objects.filter(close_date__date=max_date.date()))
 
-    clf_scaler, clf, reg_scaler, reg = get_learn_model(timestamp)
+    clf_scaler, clf, pcl, reg_scaler, reg = get_learn_model(timestamp)
 
     stock_code = [price.stock.stock_code for price in results]
     current_price = [price.close_price for price in results]
@@ -211,7 +302,11 @@ def predict_all(timestamp=0):
     clf_input = clf_scaler.transform(input_data)
     reg_input = reg_scaler.transform(input_data)
 
-    predict_chance = clf.predict_proba(clf_input)
+    if (pcl == None):
+        predict_chance = clf.predict_proba(clf_input)
+    else:
+        predict_chance = pcl.predict_proba(clf_input)
+
     predict_oscillate = reg.predict(reg_input)
 
     return stock_code, current_price, predict_chance, predict_oscillate, price_adjusted(predict_chance, predict_oscillate)

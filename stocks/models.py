@@ -144,7 +144,7 @@ class DailyPrice(models.Model):
             return query.close_price
         except:
             return self.close_price
-    
+
     @cached_property
     def is_event(self):
         THRESHOLD = -0.1 # 10% price shock to indicate an event
@@ -165,7 +165,7 @@ class DailyPrice(models.Model):
             return 0
         else:
             return result.close_price
-    
+
     @cached_property
     def oscillate_t3(self):
         t3price = self.close_price_t3
@@ -173,7 +173,7 @@ class DailyPrice(models.Model):
             return 0
         else:
             return t3price - self.close_price
-    
+
     @cached_property
     def oscillate_percent_t3(self):
         if self.close_price == 0:
@@ -190,8 +190,14 @@ class Scaler(models.Model):
     date = models.DateTimeField()
     data = models.CharField(max_length=255)
 
+class Calibrator(models.Model):
+    date = models.DateTimeField()
+    data = models.CharField(max_length=255)
+    loss = models.DecimalField(max_digits=10, decimal_places=8, default=1)
+
 class LearnModel(models.Model):
     scaler = models.ForeignKey(Scaler, on_delete=models.CASCADE)
+    calibrator = models.ForeignKey(Calibrator, on_delete=models.CASCADE, null=True)
     model_type = models.IntegerField(default=0)
     data = models.CharField(max_length=255)
     date = models.DateTimeField()

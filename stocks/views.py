@@ -167,6 +167,22 @@ def project_all(request, timestamp=0):
 
     return JsonResponse(response)
 
+def get_events(request):
+    response = []
+    max_date = DailyPrice.objects.all().aggregate(Max('close_date'))['close_date__max']
+    queryset = DailyPrice.objects.filter(close_date__date=max_date.date()).only('close_price', 'close_date', 'stock', 'oscillate')
+    for item in [o for o in list(queryset) if o.is_event]:
+        response_data = {}
+        response_data['stock_code'] = item.stock.stock_code
+        response_data['close_date'] = date_to_int(item.close_date)
+        response_data['close_price'] = item.close_price
+        response_data['oscillate'] = item.oscillate
+        response_data['oscillate_percent'] = round(item.oscillate_percent * 100, 2)
+        #response_data['previous_close_price'] = item.previous_close_price
+        response.append(response_data)
+
+    return JsonResponse(response)
+
 def get_update_status(request):
     response = {}
     #try to get latest time

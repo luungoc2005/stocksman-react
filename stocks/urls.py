@@ -15,6 +15,8 @@ urlpatterns = [
         views.top_stocks, {'t3': False}),
     url(r'^top_stocks_t3(?:/(?P<filter>[a-zA-Z]+))?(?:/(?P<timestamp>\d+))?(?:/(?P<limit>\d+))?/$',
         views.top_stocks, {'t3': True}),
+    # events
+    url(r'^events/?$', views.get_events),
     # predictions
     url(r'^project_stock/(?P<stock_code>[a-zA-Z0-9]+)/?$', views.project_stock),
     url(r'^project_all/(?:(?P<timestamp>\d+))?/?$', views.project_all),
