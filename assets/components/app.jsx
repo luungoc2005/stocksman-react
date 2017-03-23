@@ -40,7 +40,8 @@ class App extends React.Component {
               <StockInfo stockCode={text} />
             </div>
             <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
-              <TopStocks
+              <div>
+                <TopStocks
                   onItemSelected={(item) => this.onSearchInput(item)}
                 />
               </div>
