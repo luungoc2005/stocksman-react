@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from .learn import predict_stock, predict_all, create_learn_model
 from .update import update_all
 
+from threading import Thread
+
 import json
 
 def JsonResponse(data):
@@ -203,8 +205,11 @@ def get_update_status(request):
 
 def update_data(request):
     if request.method == 'POST':
-        update_all()
-        create_learn_model()
+        Thread(target=daily_update).start()
         return JsonSuccess()
     else:
         return JsonError('Invalid request')
+
+def daily_update():
+    update_all()
+    create_learn_model()
