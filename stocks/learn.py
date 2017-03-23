@@ -5,6 +5,7 @@ from sklearn import preprocessing, neural_network, neighbors, ensemble, svm, dis
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import brier_score_loss
 from datetime import datetime
+from pytz import utc
 
 from stocks.models import LearnModel, DailyPrice, Stock, Calibrator
 
@@ -24,7 +25,7 @@ CLASSIFIERS = [
 
     # svm.SVC(C=1.0, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=False, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape=None, random_state=None), #6
 
-    svm.SVC(C=1.0, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=True, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None), #6
+    svm.SVC(C=1.0, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=True, tol=0.00001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None), #6
 
     linear_model.LogisticRegression(penalty='l2', dual=False, tol=0.000001, C=1.0, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='sag', max_iter=10000, multi_class='ovr', verbose=0, warm_start=False, n_jobs=1), #5
 
@@ -120,7 +121,7 @@ def create_learn_model(save_model=True):
         new_clf = LearnModel()
         new_clf.accuracy = value_clf
         new_clf.data = cl_file
-        new_clf.date = datetime.utcnow()
+        new_clf.date = datetime.now(utc)
         new_clf.model_type = 0 # classifier
         new_clf.scaler = scaler
         new_clf.save()
@@ -165,7 +166,7 @@ def create_learn_model(save_model=True):
             new_pcl = Calibrator()
             new_pcl.loss = value_pcl
             new_pcl.data = pcl_file
-            new_pcl.date = datetime.utcnow()
+            new_pcl.date = datetime.now(utc)
             new_pcl.save()
 
             new_clf.calibrator = new_pcl
@@ -203,7 +204,7 @@ def create_learn_model(save_model=True):
         new_rg = LearnModel()
         new_rg.accuracy = value_rg
         new_rg.data = rg_file
-        new_rg.date = datetime.utcnow()
+        new_rg.date = datetime.now(utc)
         new_rg.model_type = 1 # regressor
         new_rg.scaler = scaler
         new_rg.save()
@@ -231,7 +232,7 @@ def get_learn_model(timestamp=0):
     else:
         clf_model = LearnModel.objects.filter(model_type=0).latest('date')
         rg_model = LearnModel.objects.filter(model_type=1).latest('date')
-    
+
     if (clf_file != clf_model.data or clf == None):
         clf_file = clf_model.data
         clf = joblib.load(clf_model.data)
@@ -242,11 +243,11 @@ def get_learn_model(timestamp=0):
     if (reg_file != rg_model.data or reg == None):
         reg_file = rg_model.data
         reg = joblib.load(rg_model.data)
-    
+
     if (clf_scaler_file != clf_model.scaler.data or clf_scaler == None):
         clf_scaler_file = clf_model.scaler.data
         clf_scaler = joblib.load(clf_model.scaler.data)
-    
+
     if (reg_scaler_file != rg_model.scaler.data or reg_scaler == None):
         reg_scaler_file = rg_model.scaler.data
         reg_scaler = joblib.load(rg_model.scaler.data)
