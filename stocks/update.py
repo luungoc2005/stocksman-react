@@ -14,7 +14,10 @@ def try_add(url, max_tries=3):
             price_from_json(raw_data)
             break
         except:
-            new_log = ErrorLog(date=datetime.now(utc), dest_url=url, raw_json=raw_data)
+            try:
+                new_log = ErrorLog(date=datetime.now(utc), dest_url=url, raw_json=raw_data)
+            except NameError:
+                new_log = ErrorLog(date=datetime.now(utc), dest_url=url, raw_json="")
             new_log.save()
             print('Retrying after 5s - remaining tries: ' + str(max_tries - attempt))
             sleep(5)
