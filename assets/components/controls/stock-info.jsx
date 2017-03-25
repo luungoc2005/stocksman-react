@@ -1,9 +1,11 @@
 import React from 'react';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
-import PriceList from './price-list'
 import Chip from 'material-ui/Chip';
-import {lightGreen100, deepOrange100, amber100} from 'material-ui/styles/colors';
+import {lightGreen100, deepOrange100, amber100, blue900} from 'material-ui/styles/colors';
+import {ResponsiveContainer, LineChart, Line, CartesianGrid, Tooltip, XAxis} from 'recharts'
+
+import PriceList from './price-list'
 
 import $ from 'jquery';
 
@@ -16,6 +18,7 @@ export default class StockInfo extends React.Component {
         this.state = {
             data: [],
             predict: [],
+            chart_data: [],
         };
     }
 
@@ -34,8 +37,31 @@ export default class StockInfo extends React.Component {
 
     getStockData(query) {
         if (query.length >= 3) {
-            $.getJSON(STOCK_URL.replace("{1}", query)).done((data) => {
-                this.setState({data: data});
+            $.getJSON(STOCK_URL.replace("{1}", query)).done((data) => {                
+                let chart_data = [];
+
+                if (data.prices !== undefined && data.prices.length > 0) {
+                    for (let i = 0; i < data.prices.length; i++) {
+                        let price = data.prices[i];
+                        price.close_date = parseInt(price.close_date);
+                        
+                        // for chart tooltip
+                        let date = new Date(price.close_date);
+                        //price.name="d/m".replace("d", date.getDate()).replace("m", date.getMonth());
+                        price.name=date.toLocaleDateString();
+
+                        data.prices[i] = price;
+                    }
+                    data.prices.sort((a,b) => b.close_date-a.close_date);
+                    chart_data = data.prices.slice();
+                    chart_data.reverse();
+                }
+
+                data.chart_data = chart_data;
+
+                this.setState({
+                    data: data,
+                });
             });
         }
     }
@@ -59,16 +85,6 @@ export default class StockInfo extends React.Component {
                 return "";
             };
         };
-        
-        if (stock_data.prices !== undefined && stock_data.prices.length > 0) {
-            for (let i = 0; i < stock_data.prices.length; i++) {
-                let price = stock_data.prices[i];
-                price.close_date = parseInt(price.close_date);
-                stock_data.prices[i] = price;
-            }
-            stock_data.prices.sort((a,b) => a.close_date-b.close_date);
-            stock_data.prices.reverse();
-        }
 
         let default_price = {
             close_date:null,
@@ -100,6 +116,16 @@ export default class StockInfo extends React.Component {
                     title={stock_data.stock_code}
                     subtitle={`${stock_data.company_name} - ${stock_data.index}`}
                 />
+                <CardMedia>
+                    <ResponsiveContainer width="100%" aspect={4.0/1.0}>
+                        <LineChart data={stock_data.chart_data}>
+                            <CartesianGrid strokeDasharray="3 3"/>
+                                <XAxis dataKey="name" hide={true} />
+                                <Line name="Close Price" type='monotone' dataKey='close_price' stroke={blue900} strokeWidth={2} />
+                            <Tooltip />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardMedia>
                 <CardText>
                     <div>
                         <span>Latest Price: {formatCurrency(latest_price.close_price)}
@@ -107,7 +133,7 @@ export default class StockInfo extends React.Component {
                                 {predictedString}                        
                             </Chip>
                         </span>
-                        <PriceList data={stock_data.prices} showDate={true} />
+                        <PriceList data={stock_data.prices} showDate={true} limit={5} />
                     </div>
                 </CardText>
                 <CardActions>

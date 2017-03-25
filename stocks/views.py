@@ -47,7 +47,7 @@ def get_stock(request, stock_code):
         response_data['index'] = result.listed_index.index_code
 
         # daily prices
-        prices = list(result.dailyprice_set.order_by('-close_date').only('close_date','close_price','oscillate')[:5])
+        prices = list(result.dailyprice_set.order_by('-close_date').only('close_date','close_price','oscillate')[:15])
         response_prices = []
 
         for price in prices:

@@ -23,6 +23,10 @@ export default function PriceList(props) {
     let history_list = [];
     let data_list = (props.data !== undefined) ? props.data.slice() : [];
 
+    if (props.limit) {
+        data_list = data_list.slice(0, props.limit);
+    }
+
     for (let i = 0; i < data_list.length; i++) {
         let price = data_list[i];
         history_list.push(
