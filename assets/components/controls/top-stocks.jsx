@@ -97,6 +97,7 @@ export default class TopStocks extends React.Component {
                         showDate={false}
                         onItemSelected={(item) => this.props.onItemSelected?
                                         this.props.onItemSelected(item):undefined}
+                        limit={10}
                     />
                 </CardText>
                 <CardActions expandable={true}>

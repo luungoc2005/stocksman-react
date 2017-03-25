@@ -133,7 +133,7 @@ export default class StockInfo extends React.Component {
                                 {predictedString}                        
                             </Chip>
                         </span>
-                        <PriceList data={stock_data.prices} showDate={true} />
+                        <PriceList data={stock_data.prices} showDate={true} limit={5} />
                     </div>
                 </CardText>
                 <CardActions>
