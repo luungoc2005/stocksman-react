@@ -1,2 +1,2 @@
 start npm run webpack-watch
-start python manage.py runserver --insecure
+start python manage.py runserver
