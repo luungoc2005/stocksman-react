@@ -23,7 +23,8 @@ FAVICON_VIEW = RedirectView.as_view(url='/assets/img/favicon.ico', permanent=Tru
 urlpatterns = [
     url(r'^favicon\.ico$', FAVICON_VIEW),
     url(r'^admin/', admin.site.urls),
-    url(r'^$', TemplateView.as_view(template_name="index.html")),
-
     url(r'^stocks/', include('stocks.urls')),
+
+    url(r'^$', TemplateView.as_view(template_name="index.html")),
+    url(r'^(?:.*)/?$', TemplateView.as_view(template_name="index.html")),
 ]
