@@ -32,8 +32,9 @@ class App extends React.Component {
     return (
       <Tabs
         className={[toast.grid, styles.marginTop10].join(' ')}
+        value={this.props.tabIndex}
       >
-        <Tab label="Market Status">          
+        <Tab label="Market Status" value={0}>          
           <div className={[styles.mainContent, toast.grid, styles.marginTop20].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol6Of12].join(' ')}>
               <SearchBox onUpdateInput={(item) => this.onSearchInput(item.text)} />
@@ -53,14 +54,14 @@ class App extends React.Component {
             </div>
           </div>
         </Tab>
-        <Tab label="Predictions">          
+        <Tab label="Predictions" value={1}>          
           <div className={[styles.mainContent, toast.grid, styles.marginTop10].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <PredictTable />
             </div>
           </div>
         </Tab>
-        <Tab label="Maintenance">
+        <Tab label="Maintenance" value={2}>
           <div className={[styles.mainContent, toast.grid, styles.marginTop10].join(' ')}>
             <div className={[toast.gridCol, toast.gridCol12Of12].join(' ')}>
               <StatusTable />
