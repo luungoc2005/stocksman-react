@@ -31,6 +31,8 @@ def get_input_array(price):
     ret_list.extend([price.short_moving_average, price.long_moving_average,
                     price.short_exp_moving_average, price.long_exp_moving_average,
                     price.volatility, price.industry_oscillate_percent])
+    ret_list = numpy.array(ret_list, dtype='f8')
+    ret_list[numpy.isnan(ret_list)] = 0
     return ret_list
 
 def get_output_class(price):
