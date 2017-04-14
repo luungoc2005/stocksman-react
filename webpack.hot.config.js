@@ -5,16 +5,45 @@ var BundleTracker = require('webpack-bundle-tracker')
 module.exports = {
   context: __dirname,
 
-  entry: './assets/index', // entry point of our app. assets/js/index.js should require other js modules and dependencies it needs
+  entry: [
+    'react-hot-loader/patch',
+    // activate HMR for React
+
+    'webpack-dev-server/client?http://localhost:8080',
+    // bundle the client for webpack-dev-server
+    // and connect to the provided endpoint
+
+    'webpack/hot/only-dev-server',
+    // bundle the client for hot reloading
+    // only- means to only hot reload for successful updates
+
+    './assets/index'
+    // the entry point of our app
+  ],
 
   output: {
       path: path.resolve('./assets/bundles/'),
       filename: "[name]-[hash].js",
+      publicPath: 'http://localhost:8080/',
   },
 
   plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
     new BundleTracker({filename: './webpack-stats.json'}),
   ],
+
+  devServer: {
+    hot: true,
+    // enable HMR on the server
+
+    contentBase: path.resolve(__dirname, './assets/bundles/'),
+    // match the output path
+
+    publicPath: '/'
+    // match the output `publicPath`
+  },
 
   module: {
     rules: [
