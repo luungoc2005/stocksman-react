@@ -13,9 +13,9 @@ import numpy
 import joblib
 
 CLASSIFIERS = [
-    neural_network.MLPClassifier(hidden_layer_sizes=(100,), activation='sigmoid', solver='sgd', alpha=0.0001, batch_size='auto', learning_rate='adaptive', learning_rate_init=0.001, power_t=0.5, max_iter=50000, shuffle=True, random_state=None, tol=0.000001, verbose=False, warm_start=False, momentum=0.5, nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08), #1
+    neural_network.MLPClassifier(hidden_layer_sizes=(70,), activation='sigmoid', solver='sgd', alpha=0.0001, batch_size='auto', learning_rate='adaptive', learning_rate_init=0.001, power_t=0.5, max_iter=50000, shuffle=True, random_state=None, tol=0.000001, verbose=False, warm_start=False, momentum=0.5, nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08), #1
 
-    neural_network.MLPClassifier(hidden_layer_sizes=(120, 80,), activation='relu', solver='adam', alpha=0.0001, batch_size='auto', learning_rate='adaptive', learning_rate_init=0.001, power_t=0.5, max_iter=50000, shuffle=True, random_state=None, tol=0.000001, verbose=False, warm_start=False, momentum=0.5, nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08), #2
+    neural_network.MLPClassifier(hidden_layer_sizes=(70, 50,), activation='relu', solver='adam', alpha=0.0001, batch_size='auto', learning_rate='adaptive', learning_rate_init=0.001, power_t=0.5, max_iter=50000, shuffle=True, random_state=None, tol=0.000001, verbose=False, warm_start=False, momentum=0.5, nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08), #2
 
     neighbors.KNeighborsClassifier(n_neighbors=5, weights='uniform', algorithm='auto', leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=1), #3
 
@@ -70,8 +70,9 @@ REGRESSORS = [
                                 max_features=None, random_state=None, max_leaf_nodes=None,
                                 min_impurity_split=1e-07, presort=False), #4
 
-    kernel_ridge.KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='linear',
-                                 kernel_params=None), #5
+    # because this is consistently causing hangs
+    # kernel_ridge.KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='linear',
+    #                              kernel_params=None), #5
 
     ensemble.AdaBoostRegressor(base_estimator=None, n_estimators=1000, 
                         learning_rate=1.0, loss='exponential', random_state=None), #6

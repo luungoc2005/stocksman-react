@@ -16,7 +16,12 @@ module.exports = {
     new BundleTracker({filename: './webpack-stats.json'}),
     new webpack.DefinePlugin({
       'process.env': {
-          'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+        'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        screw_ie8: true
       }
     }),
   ],
@@ -31,7 +36,7 @@ module.exports = {
               ['es2015', { "modules": false }],
               'react'
               ],
-            plugins: []
+            plugins: ['transform-react-constant-elements']
           }
       },
       {
@@ -57,5 +62,10 @@ module.exports = {
   resolve: {
     modules: ['node_modules', 'bower_components'],
     extensions: ['.jsx', '.css', '.json', '.js'],
-  },
+    alias: {
+        'react': 'react-lite',
+        'react-dom': 'react-lite',
+        'react-tap-event-plugin': 'react-lite/lib/react-tap-event-plugin',
+      },
+    },
 }

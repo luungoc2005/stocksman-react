@@ -19,6 +19,11 @@ import Footer from './components/footer';
 import App from './components/app';
 import Initializer from './components/initializer'
 
+import {
+  BrowserRouter as Router,
+  Route,
+} from 'react-router-dom'
+
 import injectTapEventPlugin from 'react-tap-event-plugin';
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
@@ -43,7 +48,12 @@ ReactDOM.render(
       <Navbar />
     </MuiThemeProvider>
     <MuiThemeProvider muiTheme={muiTheme}>
-      <App />
+      <Router>
+        <div>
+          <Route path={`/:tabIndex`} component={App}/>
+          <Route exact path="/" component={App}/>
+        </div>
+      </Router>
     </MuiThemeProvider>
     <MuiThemeProvider muiTheme={muiTheme}>
       <Footer />
