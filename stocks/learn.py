@@ -70,8 +70,9 @@ REGRESSORS = [
                                 max_features=None, random_state=None, max_leaf_nodes=None,
                                 min_impurity_split=1e-07, presort=False), #4
 
-    kernel_ridge.KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='linear',
-                                 kernel_params=None), #5
+    # because this is consistently causing hangs
+    # kernel_ridge.KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='linear',
+    #                              kernel_params=None), #5
 
     ensemble.AdaBoostRegressor(base_estimator=None, n_estimators=1000, 
                         learning_rate=1.0, loss='exponential', random_state=None), #6
